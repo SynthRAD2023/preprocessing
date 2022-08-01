@@ -134,7 +134,7 @@ An example offered to run multiple patients is  ``pre_process_batch_MR.py``.
 	spacing: new spacing in mm (example: (1,1,1))
 
 	command line usage:
-	python pre_process_tools.py resample --i 'C:\path\to\folder\image.nii.gz' --o 'C:\path\to\folder\image_resampled.nii.gz' --s (1,1,1)
+	python pre_process_tools.py resample --i 'C:\path\to\folder\image.nii.gz' --o 'C:\path\to\folder\image_resampled.nii.gz' --s 1 1 1
 
 
 **create_parameter_map()**
@@ -143,7 +143,7 @@ An example offered to run multiple patients is  ``pre_process_batch_MR.py``.
 	create a parameter map for registration using elastix, currently no input arguments, returns parameter map object
 
 
-**register(fixed, moving,parameter, output)**
+**register(fixed, moving, parameter, output)**
 	
 	description:
 	register two images using elasix parameter map
@@ -167,28 +167,33 @@ An example offered to run multiple patients is  ``pre_process_batch_MR.py``.
 	input: file path input image (example: 'C:\path\to\folder\image.nii.gz')
 	output: file path mask (example: 'C:\path\to\folder\mask.nii.gz')
 	radius: currently not used (radius to fill holes in mask), default value =  (12,12,12)
-	
 
-**mask(input, mask, mask_value, output)**
+    command line usage:
+	python pre_process_tools.py segment --i 'C:\path\to\folder\moving_registered.nii.gz' --o 'C:\path\to\folder\moving_mask.nii.gz' 
+
+
+**mask(input, mask_in, mask_value, output)**
 
 	description:
 	mask an image with provided mask (e.g. created by segment above)
 
 	arguments:
 	input: file path input image (example: 'C:\path\to\folder\image.nii.gz')
-	mask: file path to mask (example: 'C:\path\to\folder\mask.nii.gz')
-	mask_value: value to assign to voxels outside mask (ususally 0 for MR, -1000 for CT)
+	mask_in: file path to mask (example: 'C:\path\to\folder\mask.nii.gz')
+	mask_value: value to assign to voxels outside mask (usually 0 for MR, -1000 for CT)
 	output: file path to masked image (example: 'C:\path\to\folder\image_masked.nii.gz')
 
 
-**crop(input, mask, output)**
+
+
+**crop(input, mask_crop, output)**
 
 	description:
 	crop an image with bounding box of mask image
 
 	arguments:
 	input: file path input image (example: 'C:\path\to\folder\image.nii.gz')
-	mask: file path to mask, used to calculate bounding box (example: 'C:\path\to\folder\mask.nii.gz')
+	mask_crop: file path to mask, used to calculate bounding box (example: 'C:\path\to\folder\mask.nii.gz')
 	output: file path to cropped image (example: 'C:\path\to\folder\image_cropped.nii.gz')
 
 

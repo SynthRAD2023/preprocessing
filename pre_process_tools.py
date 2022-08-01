@@ -17,7 +17,7 @@ def resample(input,output,spacing):
     origin = image.GetOrigin()
     new_space = spacing
     new_size = tuple([int(round(osz*ospc/nspc)) for osz,ospc,nspc in zip(size, space, new_space)])
-    image_resampled = sitk.Resample(image, new_size, sitk.Transform() , sitk.sitkLinear, origin,  new_space, direction, 0.0, sitk.sitkInt16)
+    image_resampled = sitk.Resample(image, new_size, sitk.Transform() , sitk.sitkLinear, origin,  new_space, direction, -1000.0, sitk.sitkInt16)
     sitk.WriteImage(image_resampled,output)
 
 def create_parameter_map():
@@ -39,23 +39,30 @@ def create_parameter_map():
     p['Metric'] = ['AdvancedMattesMutualInformation']
     p['AutomaticScalesEstimation'] = ['true']
     p['AutomaticTransformInitialization'] = ["true"]
-    p['AutomaticTransformInitializationMethod']=['GeometricalCenter']
+    p['AutomaticTransformInitializationMethod']=['CenterOfGravity']
     p['HowToCombineTransforms'] = ['Compose']
     p['NumberOfHistogramBins'] = ['16' ,'32', '32', '64']
     p['NumberOfResolutions'] = ['4']
     p['ImagePyramidSchedule'] = ['8','8','8','4','4','4','2','2','2','1','1','1']
-    p['MaximumNumberOfIterations'] = ['1000', '1000', '1500', '1500']
-    p['NumberOfSpatialSamples'] = ['2048']
-    p['NewSamplesEveryIteration'] = ['true']
-    p['ImageSampler'] = ['RandomCoordinate']
+    p['MaximumNumberOfIterations'] = ['1000', '1000', '500', '300']
+    p['NumberOfSpatialSamples'] = ['3000']
+    p['ImageSampler'] = ['Grid']
+    p['SampleGridSpacing'] = ['4 4 4 2']
+    p['MaximumNumberOfSamplingAttempts'] = [' 20']
+    p['RequiredRatioOfValidSamples']=['0.045']
     p['FixedImageBSplineInterpolationOrder'] = ['1']
     p['UseRandomSampleRegion'] = ['true']
     p['BSplineInterpolationOrder'] = ['1']
-    p['FinalBSplineInterpolationOrder'] = ['3']
+    p['FinalBSplineInterpolationOrder'] = ['1']
     p['DefaultPixelValue'] = ['0']
     p['WriteResultImage '] = ['true']
     p['WriteTransformParametersEachIteration'] = ['false']
-    p['WriteTransformParametersEachResolution'] = ['true']
+    p['WriteTransformParametersEachResolution'] = ['false']
+    p['ResultImageFormat'] = ['nrrd']
+    return(p)
+
+def read_parameter_map(file):
+    p = sitk.ParameterMap(file)
     p['ResultImageFormat'] = ['nrrd']
     return(p)
 
@@ -114,20 +121,26 @@ def crop(input_image,mask_for_crop,output_image):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Define fixed, moving and output filenames')
-    parser.add_argument('operation', help='select operation to perform (register, convert,mask or resample)')
+    parser.add_argument('operation', help='select operation to perform (register, convert, segment, mask, resample)')
     parser.add_argument('--f', help='fixed file path')
     parser.add_argument('--m', help='moving file path')
     parser.add_argument('--i', help='input file path (folder containing dicom series) for registration or resampling')
     parser.add_argument('--o',help='output file path')
+    parser.add_argument('--p',help='parameter file path (if not specified generate default)')
     parser.add_argument('--s',help='spacing used for resampling (size of the image will be adjusted accordingly)',nargs='+',type=int)
     parser.add_argument('--r',help='radius for closing operation during masking')
-    parser.add_argument('--mask',help='input mask to mask CT, CBCT or MR image')
+    parser.add_argument('--mask_in',help='input mask to mask CT, CBCT or MR image')
     parser.add_argument('--mask_value',help = 'intensity value used outside mask')
     parser.add_argument('--mask_crop',help='mask to calculate bounding box for crop')
     args = parser.parse_args()
 
     if args.operation == 'register':
-        register(args.f,args.m,create_parameter_map(),args.o)
+        if args.p is not None:
+            register(args.f, args.m, read_parameter_map(args.p), args.o)
+        # do something
+        else:
+        # do something else
+            register(args.f, args.m, create_parameter_map(), args.o)
     elif args.operation == 'convert':
         convert_dicom_to_nifti(args.i,args.o)
     elif args.operation == 'resample':
@@ -136,7 +149,7 @@ if __name__ == "__main__":
     elif args.operation == 'segment':
         segment(args.i,args.o,args.r)
     elif args.operation == 'mask':
-        mask(args.i,args.mask,args.mask_value,args.o)
+        mask(args.i,args.mask_in,args.mask_value,args.o)
     elif args.operation == 'crop':
         crop(args.i,args.mask_crop,args.o)
     else:
