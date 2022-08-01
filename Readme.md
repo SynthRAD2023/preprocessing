@@ -23,7 +23,7 @@
 
   <p align="center">
     Preprocessing script: from dicom to aligned nifty for 
-<a href="https://synthrad2023.grand-challenge.org/"><strong>SynthRAD2023 Grand Challenge
+<a href="https://synthrad2023.grand-challenge.org/"><strong>SynthRAD2023 Grand Challenge</strong></a>
   <br />
     <a href="https://github.com/SynthRAD2023/preprocessing"><strong>Explore the docs »</strong></a>
     <br />
