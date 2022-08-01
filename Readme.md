@@ -10,7 +10,7 @@
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
-[![GNU GPL-v3.0][license-shield]][https://github.com/SynthRAD2023/preprocessing/blob/db07f7007063243f2f3fdb2084db7ce288d0a070/LICENSE]
+[![GNU GPL-v3.0][license-shield]][license-url]
 
 
 <!-- PROJECT LOGO -->
@@ -48,8 +48,9 @@
 * [Contributing](#contributing)
 * [License](#license)
 * [Contact](#contact)
+<!--
 * [Acknowledgements](#acknowledgements)
-
+-->
 
 
 <!-- ABOUT THE PROJECT -->
@@ -214,24 +215,23 @@ Distributed under the GNU General Public License v3.0. See `LICENSE` for more in
 <!-- CONTACT -->
 ## Contact
 
-Adrian Thummerer - - mail here
-
+Adrian Thummerer - - mail here  
 Matteo Maspero - [@twitter_handle](https://twitter.com/matteomasperonl) - m.maspero@umcutrecht.nl
 
 Project Link: [https://github.com/SynthRAD2023/preprocessing](https://github.com/SynthRAD2023/preprocessing)
 
 
-<!-- ACKNOWLEDGEMENTS -->
+<!-- ACKNOWLEDGEMENTS 
 ## Acknowledgements
 
 * []()
 * []()
 * []()
-
-
+-->
 
 <!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+<!-- https://www.markdownguide.org/basic-syntax/
+#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/SynthRAD2023/repo.svg?style=flat-square
 [contributors-url]: https://github.com/SynthRAD2023/repo/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/SynthRAD2023/repo.svg?style=flat-square
@@ -242,6 +242,3 @@ Project Link: [https://github.com/SynthRAD2023/preprocessing](https://github.com
 [issues-url]: https://github.com/SynthRAD2023/repo/issues
 [license-shield]: https://img.shields.io/github/license/SynthRAD2023/repo.svg?style=flat-square
 [license-url]: https://github.com/SynthRAD2023/repo/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/SynthRAD2023
-[product-screenshot]: images/screenshot.png
