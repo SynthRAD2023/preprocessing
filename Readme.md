@@ -216,7 +216,7 @@ Distributed under the GNU General Public License v3.0. See `LICENSE` for more in
 ## Contact
 
 Adrian Thummerer - - mail here  
-Matteo Maspero - [@twitter_handle](https://twitter.com/matteomasperonl) - m.maspero@umcutrecht.nl
+Matteo Maspero - [@matteomasperonl](https://twitter.com/matteomasperonl) - m.maspero@umcutrecht.nl
 
 Project Link: [https://github.com/SynthRAD2023/preprocessing](https://github.com/SynthRAD2023/preprocessing)
 
