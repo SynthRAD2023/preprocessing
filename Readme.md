@@ -137,10 +137,10 @@ An example offered to run multiple patients is  ``pre_process_batch_MR.py``.
 	python pre_process_tools.py resample --i 'C:\path\to\folder\image.nii.gz' --o 'C:\path\to\folder\image_resampled.nii.gz' --s 1 1 1
 
 
-**create_parameter_map()**
+**read_parameter_map()**
 	
 	description:
-	create a parameter map for registration using elastix, currently no input arguments, returns parameter map object
+	read an elastix parameter map from a .txt file and return the parameter map object
 
 
 **register(fixed, moving, parameter, output)**
@@ -151,11 +151,11 @@ An example offered to run multiple patients is  ``pre_process_batch_MR.py``.
 	arguments:
 	fixed: file path to fixed image for registration (example: 'C:\path\to\folder\fixed.nii.gz')
 	moving: file path to moving image for registration (example: 'C:\path\to\folder\moving.nii.gz')
-	parameter: parameter map (example: create_parameter_map())
+	parameter: file path to parameter map .txt file (example: 'C:\path\to\folder\parameters.txt')
 	output: file path to registered image (example: 'C:\path\to\folder\moving_registered.nii.gz')
 
 	command line usage:
-	python pre_process_tools.py register --f C:\path\to\folder\fixed.nii.gz' --m 'C:\path\to\folder\moving.nii.gz' --o 'C:\path\to\folder\moving_registered.nii.gz'
+	python pre_process_tools.py register --f C:\path\to\folder\fixed.nii.gz' --m 'C:\path\to\folder\moving.nii.gz' --p 'C:\path\to\folder\parameters.txt'--o 'C:\path\to\folder\moving_registered.nii.gz'
 
 
 **segment(input, output, radius)**
