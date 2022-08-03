@@ -2,7 +2,7 @@ import os
 import fnmatch
 import pre_process_tools as pre
 
-path = r'\\zkh\Appdata\RTDicom\GalaponAV\Dataset_Brain'
+path = r'\\path\to\working\directory'
 patient_list = os.listdir(path)
 patient_list = fnmatch.filter(patient_list,'p0*')
 
@@ -47,7 +47,7 @@ for patient in patient_list:
         print('--MR already registered!')
     else:
         print('--register MR')
-        pre.register(os.path.join(path,patient,'temp','pCT_resampled.nii.gz'),os.path.join(path,patient,'temp','MR_T1_gd.nii.gz'),pre.create_parameter_map(),os.path.join(path,patient,'temp','MR_T1_gd_registered.nii.gz'))
+        pre.register(os.path.join(path,patient,'temp','pCT_resampled.nii.gz'),os.path.join(path,patient,'temp','MR_T1_gd.nii.gz'),pre.read_parameter_map('path/to/parameter_map.txt'),os.path.join(path,patient,'temp','MR_T1_gd_registered.nii.gz'))
 
     ## mask MR and CT
     if os.path.isfile(os.path.join(path,patient,'temp','mask_MR.nii.gz')):

@@ -20,74 +20,45 @@ def resample(input,output,spacing):
     image_resampled = sitk.Resample(image, new_size, sitk.Transform() , sitk.sitkLinear, origin,  new_space, direction, -1000.0, sitk.sitkInt16)
     sitk.WriteImage(image_resampled,output)
 
-def create_parameter_map():
-    p = sitk.ParameterMap()
-    p['FixedInternalImagePixelType'] = ['float']
-    p['MovingInternalImagePixelType'] = ['float']
-    p['FixedImageDimension'] = ['3']
-    p['MovingImageDimension'] = ['3']
-    p['UseDirectionCosines'] = ['true']
-    p['Registration'] = ['MultiResolutionRegistration']
-    p['Interpolator'] = ['LinearInterpolator']
-    p['Resampler'] = ['DefaultResampler']
-    p['ResampleInterpolator'] = ['FinalBSplineInterpolator']
-    p['FixedImagePyramid'] = ['FixedRecursiveImagePyramid']
-    p['MovingImagePyramid'] = ['MovingRecursiveImagePyramid']
-    p['Transform'] = ['EulerTransform']
-    p['Sampler'] = ['RandomCoordinate']
-    p['Optimizer'] = ['AdaptiveStochasticGradientDescent']
-    p['Metric'] = ['AdvancedMattesMutualInformation']
-    p['AutomaticScalesEstimation'] = ['true']
-    p['AutomaticTransformInitialization'] = ["true"]
-    p['AutomaticTransformInitializationMethod']=['CenterOfGravity']
-    p['HowToCombineTransforms'] = ['Compose']
-    p['NumberOfHistogramBins'] = ['16' ,'32', '32', '64']
-    p['NumberOfResolutions'] = ['4']
-    p['ImagePyramidSchedule'] = ['8','8','8','4','4','4','2','2','2','1','1','1']
-    p['MaximumNumberOfIterations'] = ['1000', '1000', '500', '300']
-    p['NumberOfSpatialSamples'] = ['3000']
-    p['ImageSampler'] = ['Grid']
-    p['SampleGridSpacing'] = ['4 4 4 2']
-    p['MaximumNumberOfSamplingAttempts'] = [' 20']
-    p['RequiredRatioOfValidSamples']=['0.045']
-    p['FixedImageBSplineInterpolationOrder'] = ['1']
-    p['UseRandomSampleRegion'] = ['true']
-    p['BSplineInterpolationOrder'] = ['1']
-    p['FinalBSplineInterpolationOrder'] = ['1']
-    p['DefaultPixelValue'] = ['0']
-    p['WriteResultImage '] = ['true']
-    p['WriteTransformParametersEachIteration'] = ['false']
-    p['WriteTransformParametersEachResolution'] = ['false']
-    p['ResultImageFormat'] = ['nrrd']
-    return(p)
-
-def read_parameter_map(file):
-    p = sitk.ParameterMap(file)
-    p['ResultImageFormat'] = ['nrrd']
-    return(p)
+def read_parameter_map(parameter_fn):
+    return sitk.ReadParameterFile(parameter_fn)
 
 def register(fixed,moving,parameter,output):
     #Load images
-    fixed_image = sitk.ReadImage(fixed,sitk.sitkFloat32)
-    moving_image = sitk.ReadImage(moving,sitk.sitkFloat32)
-    #Initialize registration
-    initial_transform = sitk.CenteredTransformInitializer(fixed_image, 
-                                                        moving_image, 
-                                                        sitk.Euler3DTransform(), 
-                                                        sitk.CenteredTransformInitializerFilter.GEOMETRY)
+    fixed_image = sitk.ReadImage(fixed)
+    moving_image = sitk.ReadImage(moving)
 
-    moving_initialized = sitk.Resample(moving_image,fixed_image,initial_transform)
-
-    #Perform registration
+    #Perform registration based on parameter file
     elastixImageFilter = sitk.ElastixImageFilter()
     elastixImageFilter.SetParameterMap(parameter)
     elastixImageFilter.PrintParameterMap()
-    elastixImageFilter.SetFixedImage(fixed_image)
-    elastixImageFilter.SetMovingImage(moving_initialized)
+    elastixImageFilter.SetFixedImage(moving_image) #due to FOV differences CT first registered to MR an inverted in the end
+    elastixImageFilter.SetMovingImage(fixed_image)
     elastixImageFilter.LogToConsoleOn()
+    elastixImageFilter.LogToFileOff()
     elastixImageFilter.Execute()
-    output_image = elastixImageFilter.GetResultImage()
-    output_image = sitk.Cast(output_image,sitk.sitkInt16)
+    
+    #convert to itk transform format
+    transform = elastixImageFilter.GetTransformParameterMap(0)
+    x = transform.values()
+    center = np.array((x[0])).astype(np.float64)
+    rigid = np.array((x[22])).astype(np.float64)
+    transform_itk = sitk.Euler3DTransform()
+    transform_itk.SetParameters(rigid)
+    transform_itk.SetCenter(center)
+    transform_itk.SetComputeZYX(False)
+
+    ##invert transform to get MR registered to CT
+    inverse = transform_itk.GetInverse()
+
+    ##transform MR image
+    resample = sitk.ResampleImageFilter()
+    resample.SetReferenceImage(fixed_image)
+    resample.SetTransform(inverse)
+    resample.SetInterpolator(sitk.sitkLinear)
+    output_image = resample.Execute(moving_image)
+    
+    #write output image
     sitk.WriteImage(output_image ,output)
 
 def segment(input_image, output_mask, radius=(12,12,12)):
@@ -140,7 +111,8 @@ if __name__ == "__main__":
         # do something
         else:
         # do something else
-            register(args.f, args.m, create_parameter_map(), args.o)
+            print('Please load a valid elastix parameter file!')
+            #register(args.f, args.m, create_parameter_map(), args.o)
     elif args.operation == 'convert':
         convert_dicom_to_nifti(args.i,args.o)
     elif args.operation == 'resample':
