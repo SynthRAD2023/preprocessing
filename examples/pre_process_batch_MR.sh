@@ -42,10 +42,16 @@ do
 
 # These three are the final images that are provided for each patient
 # Crop to dilated mask_MR
+  echo "Cropping"
   python ../pre_process_tools.py crop --i ${TMP}ct_resampled.nii.gz --mask_crop ${TMP}mask_MR.nii.gz --o ${TMP}ct_cropped.nii.gz
   python ../pre_process_tools.py crop --i ${TMP}mr_T1_registered.nii.gz --mask_crop ${TMP}mask_MR.nii.gz --o ${TMP}mr_cropped.nii.gz
 # Crop the mask
   python ../pre_process_tools.py crop --i ${TMP}mask_MR.nii.gz --mask_crop ${TMP}mask_MR.nii.gz --o ${TMP}mask_cropped.nii.gz
+
+# Removing the images that are not shared
+#  echo "Removing "
+#  rm ${TMP}mask_MR.nii.gz ${TMP}mr_T1_registered.nii.gz ${TMP}ct_resampled.nii.gz ${TMP}mr_or.nii.gz ${TMP}ct_or.nii.gz ${TMP}mr_or.gipl ${TMP}ct_or.gipl
+
 
 <<'Comm'
 
@@ -62,4 +68,5 @@ do
 # Crop to dilated mask after having applied the masking
   python ../pre_process_tools.py crop --i ${TMP}ct_resampled_masked.nii.gz --mask_crop ${TMP}mask_MR.nii.gz --o ${TMP}ct_cropped_masked.nii.gz
   python ../pre_process_tools.py crop --i ${TMP}mr_T1_registered_masked.nii.gz --mask_crop ${TMP}mask_MR.nii.gz --o ${TMP}mr_cropped_masked.nii.gz
+Comm
 done
