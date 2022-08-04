@@ -135,4 +135,4 @@
 
 // Define output format
 //(ResultImagePixelType "double")
-//(ResultImageFormat "gipl")
+//(ResultImageFormat "nrrd")
