@@ -103,7 +103,9 @@ The main file ``pre_process_tools.py`` is meant to:
 * Segment patient outline on MRI an dilate mask;
 * Crop MRI, CT and the mask with a small extra margin to the dilated mask;
 
-if desired, it is also possible to:
+The Elastix parameter files adopted can be found in ``param_files``.
+
+If desired, it is also possible to:
 * Apply the mask MRI and CT;
 
 Each of the task can be run as a subfunction of the main file, as describe in the next section.
