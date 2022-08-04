@@ -1,4 +1,5 @@
 #!/bin/bash
+# Run this in a OS with unix-based syntax
 
 # Modify according to the location of your data
 initial='/path/to/data/directory'

@@ -101,12 +101,17 @@ The main file ``pre_process_tools.py`` is meant to:
 * Resample CT to 1x1x1 (for brain);
 * Register MR to CT (as a result MRI will also have 1x1x1 spacing) using Elastix;
 * Segment patient outline on MRI an dilate mask;
-* Mask MRI and CT;
-* Crop MRI an CT with a small extra margin to the dilated mask;
+* Crop MRI, CT and the mask with a small extra margin to the dilated mask;
+
+if desired, it is also possible to:
+* Apply the mask MRI and CT;
 
 Each of the task can be run as a subfunction of the main file, as describe in the next section.
 
-An example offered to run multiple patients is  ``pre_process_batch_MR.py``.
+Examples on how to run for multiple patients can be found in the directory ``examples``:
+* ``pre_process_batch_MR.py`` for python-based pre-processing;
+* ``pre_process_batch_MR.sh`` for bash-based (terminal) pre-processing in Unix. This file reads the list
+of patients provided in ``pat_list_brain_mri2ct.txt``.
 
 ### Functions Descriptions
 
@@ -172,17 +177,15 @@ An example offered to run multiple patients is  ``pre_process_batch_MR.py``.
 	python pre_process_tools.py segment --i 'C:\path\to\folder\moving_registered.nii.gz' --o 'C:\path\to\folder\moving_mask.nii.gz' 
 
 
-**mask(input, mask_in, mask_value, output)**
+**mask_mr or mask_ct(input, mask_in, output)**
 
 	description:
-	mask an image with provided mask (e.g. created by segment above)
+	mask an image with provided mask (e.g. created by segment above). The background value is -1000 for CT, and 0 for MRI.
 
 	arguments:
 	input: file path input image (example: 'C:\path\to\folder\image.nii.gz')
 	mask_in: file path to mask (example: 'C:\path\to\folder\mask.nii.gz')
-	mask_value: value to assign to voxels outside mask (usually 0 for MR, -1000 for CT)
 	output: file path to masked image (example: 'C:\path\to\folder\image_masked.nii.gz')
-
 
 
 
