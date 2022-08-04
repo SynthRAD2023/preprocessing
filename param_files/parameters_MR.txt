@@ -76,7 +76,7 @@
 // Maximum number of iterations in each resolution level:
 // 200-500 works usually fine for rigid registration.
 // For more robustness, you may increase this to 1000-2000.
-(MaximumNumberOfIterations 1000 1000 300 300)
+(MaximumNumberOfIterations 1000 1000 500 300)
 
 // The step size of the optimizer, in mm. By default the voxel size is used.
 // which usually works well. In case of unusual high-resolution images
@@ -130,8 +130,8 @@
 (WriteResultImage "true")
 
 //***********MiscVisulaization
-(WriteTransformParametersEachIteration "false" "false" "false" "false")
-(WriteTransformParametersEachResolution "false" "false" "false" "false")
+(WriteTransformParametersEachIteration "false")
+(WriteTransformParametersEachResolution "false")
 
 // Define output format
 //(ResultImagePixelType "double")

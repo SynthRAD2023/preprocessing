@@ -49,13 +49,42 @@ for patient in patient_list:
         print('--register MR')
         pre.register(os.path.join(path,patient,'temp','pCT_resampled.nii.gz'),os.path.join(path,patient,'temp','MR_T1_gd.nii.gz'),pre.read_parameter_map('path/to/parameter_map.txt'),os.path.join(path,patient,'temp','MR_T1_gd_registered.nii.gz'))
 
-    ## mask MR and CT
+    ## Find mask MR and CT
     if os.path.isfile(os.path.join(path,patient,'temp','mask_MR.nii.gz')):
         print('--MR already segmented!')
     else:
         print('--segment MR')
         pre.segment(os.path.join(path,patient,'temp','MR_T1_gd_registered.nii.gz'),os.path.join(path,patient,'temp','mask_MR.nii.gz'))
     
+    ## crop MR and CT without applying any mask
+    if os.path.isfile(os.path.join(path, patient, 'temp', 'MR_cropped.nii.gz')):
+        print('--MR already cropped!')
+    else:
+        print('--crop MR')
+        pre.crop(os.path.join(path, patient, 'temp', 'MR_T1_gd_registered.nii.gz'),
+                 os.path.join(path, patient, 'temp', 'mask_MR.nii.gz'),
+                 os.path.join(path, patient, 'temp', 'MR_cropped.nii.gz'))
+
+    if os.path.isfile(os.path.join(path, patient, 'temp', 'CT_cropped.nii.gz')):
+        print('--CT already cropped!')
+    else:
+        print('--crop CT')
+        pre.crop(os.path.join(path, patient, 'temp', 'pCT_resampled.nii.gz'),
+                 os.path.join(path, patient, 'temp', 'mask_MR.nii.gz'),
+                 os.path.join(path, patient, 'temp', 'CT_cropped.nii.gz'))
+
+    if os.path.isfile(os.path.join(path, patient, 'temp', 'mask_cropped.nii.gz')):
+        print('--mask already cropped!')
+    else:
+        print('--crop mask')
+        pre.crop(os.path.join(path, patient, 'temp', 'mask_MR.nii.gz'),
+                 os.path.join(path, patient, 'temp', 'mask_MR.nii.gz'),
+                 os.path.join(path, patient, 'temp', 'mask_cropped.nii.gz'))
+
+# Optional --> apply mask to images
+
+'''
+    ## Apply mask to MR and CT
     if os.path.isfile(os.path.join(path,patient,'temp','MR_T1_gd_registered_masked.nii.gz')):
         print('--MR already masked!')
     else:
@@ -68,7 +97,8 @@ for patient in patient_list:
         print('--mask pCT')
         pre.mask(os.path.join(path,patient,'temp','pCT_resampled.nii.gz'),os.path.join(path,patient,'temp','mask_MR.nii.gz'),-1000,os.path.join(path,patient,'temp','pCT_resampled_masked.nii.gz'))
 
-    ## crop MR and CT and mask
+
+    ## crop MR and CT with mask applied
     if os.path.isfile(os.path.join(path,patient,'temp','MR_cropped.nii.gz')):
         print('--MR already cropped!')
     else:
@@ -86,3 +116,4 @@ for patient in patient_list:
     else:
         print('--crop mask')
         pre.crop(os.path.join(path,patient,'temp','mask_MR.nii.gz'),os.path.join(path,patient,'temp','mask_MR.nii.gz'),os.path.join(path,patient,'temp','mask_cropped.nii.gz'))
+'''
