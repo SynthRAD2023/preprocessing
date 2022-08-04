@@ -34,7 +34,7 @@ do
 
 # Register MRI to CT according to the parameter file specified
   echo "Registering..."
-  python ../pre_process_tools.py register --f ${TMP}ct_resampled.nii.gz --m ${TMP}mr_or.nii.gz --o ${TMP}mr_T1_registered.nii.gz --p parameters_MR.txt
+  python ../pre_process_tools.py register --f ${TMP}ct_resampled.nii.gz --m ${TMP}mr_or.nii.gz --o ${TMP}mr_T1_registered.nii.gz --p ../param_files/parameters_MR.txt
 
 # Mask MR & CT
   echo "Masking"

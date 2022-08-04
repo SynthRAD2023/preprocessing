@@ -47,7 +47,7 @@ for patient in patient_list:
         print('--MR already registered!')
     else:
         print('--register MR')
-        pre.register(os.path.join(path,patient,'temp','pCT_resampled.nii.gz'),os.path.join(path,patient,'temp','MR_T1_gd.nii.gz'),pre.read_parameter_map('path/to/parameter_map.txt'),os.path.join(path,patient,'temp','MR_T1_gd_registered.nii.gz'))
+        pre.register(os.path.join(path,patient,'temp','pCT_resampled.nii.gz'),os.path.join(path,patient,'temp','MR_T1_gd.nii.gz'),pre.read_parameter_map('../param_files/parameters_MR.txt'),os.path.join(path,patient,'temp','MR_T1_gd_registered.nii.gz'))
 
     ## Find mask MR and CT
     if os.path.isfile(os.path.join(path,patient,'temp','mask_MR.nii.gz')):
