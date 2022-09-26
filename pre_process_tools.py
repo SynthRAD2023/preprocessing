@@ -73,9 +73,8 @@ def register(fixed, moving, parameter, output):
 
 
 def segment(input_image, output_mask, radius=(12, 12, 12)):
-    image = sitk.InvertIntensity(sitk.ReadImage(input_image))
+    image = sitk.InvertIntensity(sitk.Cast((sitk.ReadImage(input_image)),sitk.sitkFloat32))
     mask = sitk.OtsuThreshold(image)
-    mask = (mask-1)*(-1)
     component_image = sitk.ConnectedComponent(mask)
     sorted_component_image = sitk.RelabelComponent(component_image, sortByObjectSize=True)
     largest_component_binary_image = sorted_component_image == 1
