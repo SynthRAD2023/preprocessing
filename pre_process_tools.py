@@ -53,6 +53,11 @@ def register(fixed, moving, parameter, output):
     transform_itk.SetCenter(center)
     transform_itk.SetComputeZYX(False)
 
+    # save itk transform to correct MR mask later
+    output = str(output)
+    transform_itk.WriteTransform(str(output.split('.')[:-2][0]) + '_parameters.txt')
+    #transform_itk.WriteTransform(str('registration_parameters.txt'))
+
     ##invert transform to get MR registered to CT
     inverse = transform_itk.GetInverse()
 
@@ -68,16 +73,44 @@ def register(fixed, moving, parameter, output):
 
 
 def segment(input_image, output_mask, radius=(12, 12, 12)):
-    image = sitk.ReadImage(input_image)
-    mask = sitk.OtsuThreshold(sitk.InvertIntensity(image))
+    image = sitk.InvertIntensity(sitk.ReadImage(input_image))
+    mask = sitk.OtsuThreshold(image)
+    mask = (mask-1)*(-1)
     component_image = sitk.ConnectedComponent(mask)
     sorted_component_image = sitk.RelabelComponent(component_image, sortByObjectSize=True)
     largest_component_binary_image = sorted_component_image == 1
     mask_closed = sitk.BinaryMorphologicalClosing(largest_component_binary_image, (12, 12, 12))
-    mask_closed1 = sitk.BinaryMorphologicalClosing(mask_closed, (7, 7, 7))
-    # sitk.WriteImage(mask_closed1,output_mask)
     dilated_mask = sitk.BinaryDilate(mask_closed, (10, 10, 0))
     sitk.WriteImage(dilated_mask, output_mask)
+
+def correct_mask_mr(mr,ct,transform,mask,mask_corrected):
+    # load inputs
+    mr_im = sitk.ReadImage(mr)
+    ct_im = sitk.ReadImage(ct)
+    tf = sitk.ReadTransform(transform)
+    mask_im = sitk.ReadImage(mask)
+    
+    # create mask of original MR FOV
+    mr_im_np = sitk.GetArrayFromImage(mr_im)
+    mr_im_np[mr_im_np>=-2000]=1
+    fov=sitk.GetImageFromArray(mr_im_np)
+    fov.CopyInformation(mr_im)
+
+    # transform mask to registered mr
+    tf = tf.GetInverse()
+    default_value=0
+    interpolator=sitk.sitkNearestNeighbor
+    fov_reg = sitk.Resample(fov,ct_im,tf,interpolator,default_value)
+    
+    # correct MR mask with fov_reg box
+    fov_np = sitk.GetArrayFromImage(fov_reg)
+    mask_np = sitk.GetArrayFromImage(mask_im)
+    mask_corrected_np=mask_np*fov_np
+
+    #save corrected mask
+    mask_corrected_im = sitk.GetImageFromArray(mask_corrected_np)
+    mask_corrected_im.CopyInformation(mask_im)
+    sitk.WriteImage(mask_corrected_im, mask_corrected)
 
 
 def mask_ct(input_image, input_mask, output_image):
