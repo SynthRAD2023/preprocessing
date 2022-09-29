@@ -1,0 +1,16 @@
+Modality
+Manufacturer
+ManufacturerModelName
+StationName
+SeriesDescription
+PatientSex
+SliceThickness
+KVP
+DataCollectionDiameter
+ReconstructionDiameter
+ExposureTime
+XRayTubeCurrent
+Exposure
+Rows
+Columns
+PixelSpacing

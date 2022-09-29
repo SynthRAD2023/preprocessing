@@ -115,7 +115,16 @@ Examples on how to run for multiple patients can be found in the directory ``exa
 * ``pre_process_batch_MR.sh`` for bash-based (terminal) pre-processing in Unix. This file reads the list
 of patients provided in ``pat_list_brain_mri2ct.txt``.
 
-### Functions Descriptions
+The file ``extract_tags_tools.py`` provides functions to:
+* Read a list of tags from a text file;
+* Extract tags from dicom files and returns a dict containgin the key:value pairs
+* Write the tags to a csv/excel file
+
+An example of a tag extraction is provided in the directory examples:
+*  ``extract_tags_UMCG.py`` shows an example on how to use the above functions for a dataset containing multiple patients and images.
+
+## Functions Descriptions
+### Pre-processing:
 
 **convert_dicom_nifti(input, output)**
 
@@ -214,6 +223,55 @@ of patients provided in ``pat_list_brain_mri2ct.txt``.
 	input: file path input image (example: 'C:\path\to\folder\image.nii.gz')
 	mask_crop: file path to mask, used to calculate bounding box (example: 'C:\path\to\folder\mask.nii.gz')
 	output: file path to cropped image (example: 'C:\path\to\folder\image_cropped.nii.gz')
+
+### Dicom tag extraction:
+
+**read_tags(input_txt)**
+
+	description:
+	read dicom tag strings from a txt file
+
+	arguments:
+	input_txt: file path to text file containg dicom tags (see example in param_files)
+	
+	returns: 
+	python list containing dicom tags
+
+**extract_tags(dcm_folder_path,tag_list)**
+
+	description:
+	extracts tags from a folder containg dicom files (only from the first element)
+
+	arguments:
+	dcm_folder_path: path to folder containing dicom image slices
+	tag_list: list defining which tags to extract
+
+	returns:
+	python dict with dicom tags as key:value pairs
+
+
+
+**write_dict_to_csv(input_dict,output_csv,tag_list)**
+
+	description:
+	takes a dict containing dicom tags and writes it to a csv file
+
+	arguments:
+	input_dict: dict containing extracted tags
+	output_csv: filename of output csv file
+	tag_list: list of dicom tags, necessary to create header in csv file
+
+
+
+
+**write_csv_to_xlsx(input_csv,output_xlsx)**
+
+	description:
+	takes a csv and creates an xlsx file
+
+	arguments:
+	input_csv: path to csv file
+	output_xlsx: filepath of output xlsx file
 
 
 <!-- ROADMAP -->
