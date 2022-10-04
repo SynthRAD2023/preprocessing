@@ -1,3 +1,4 @@
+PatientName
 Modality
 Manufacturer
 ManufacturerModelName

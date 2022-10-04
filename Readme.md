@@ -80,7 +80,14 @@ pip install SimpleITK
 ```sh
 pip install SimpleITK-SimpleElastix
 ```
-
+* PyDicom
+```sh
+pip install pydicom
+```
+* openpyxl
+```sh
+pip install openpyxl
+```
 ### Installation
 
 1. Clone the repo
@@ -117,7 +124,8 @@ of patients provided in ``pat_list_brain_mri2ct.txt``.
 
 The file ``extract_tags_tools.py`` provides functions to:
 * Read a list of tags from a text file;
-* Extract tags from dicom files and returns a dict containgin the key:value pairs
+* Extract tags from dicom files and returns a dict containing the key:value pairs
+* Get dimension and spacing of pre-processed images
 * Write the tags to a csv/excel file
 
 An example of a tag extraction is provided in the directory examples:
@@ -237,14 +245,15 @@ An example of a tag extraction is provided in the directory examples:
 	returns: 
 	python list containing dicom tags
 
-**extract_tags(dcm_folder_path,tag_list)**
+**extract_tags(dcm_folder_path,tag_list,pre_processed=None)**
 
 	description:
-	extracts tags from a folder containg dicom files (only from the first element)
+	extracts tags from a folder containg dicom files (only from the first element) and from pre-processed nifti images
 
 	arguments:
 	dcm_folder_path: path to folder containing dicom image slices
 	tag_list: list defining which tags to extract
+	pre_processed: path to pre-processed nifti file (can be left out if tags should be only extracted from dicom files)
 
 	returns:
 	python dict with dicom tags as key:value pairs

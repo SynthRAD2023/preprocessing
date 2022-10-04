@@ -19,7 +19,8 @@ for i in range(len(cases)):
     print(i)
     try:
         MR_dirs = fnmatch.filter(os.listdir(os.path.join(dataset_path,cases[i],'MRI')),'t1_mprage_sag_p2_*_MPR_*')
-        mr_tags_case = ext.extract_tags(os.path.join(dataset_path,cases[i],'MRI',MR_dirs[0]),tags_MR)
+        MR_preprocessed = fnmatch.filter(os.listdir(os.path.join(dataset_path,cases[i],'temp')),'MR_cropped.nii.gz')
+        mr_tags_case = ext.extract_tags(os.path.join(dataset_path,cases[i],'MRI',MR_dirs[0]),tags_MR,MR_preprocessed)
         key = str(cases[i])
         MR_dataset[key]=mr_tags_case
     except:
@@ -27,7 +28,8 @@ for i in range(len(cases)):
 
     try:
         CT_dirs = fnmatch.filter(os.listdir(os.path.join(dataset_path,cases[i],'CT')),'*pCT*')
-        ct_tags_case = ext.extract_tags(os.path.join(dataset_path,cases[i],'CT',CT_dirs[0]),tags_CT)
+        CT_preprocessed = fnmatch.filter(os.listdir(os.path.join(dataset_path,cases[i],'temp')),'CT_cropped.nii.gz')
+        ct_tags_case = ext.extract_tags(os.path.join(dataset_path,cases[i],'CT',CT_dirs[0]),tags_CT,CT_preprocessed)
         key = str(cases[i])
         CT_dataset[key]=ct_tags_case
     except:
