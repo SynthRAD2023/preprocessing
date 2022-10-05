@@ -162,7 +162,7 @@
 (FinalBSplineInterpolationOrder 1)
 
 //Default pixel value for pixels that come from outside the picture:
-(DefaultPixelValue 0)
+(DefaultPixelValue -1000)
 
 //************Output***************
 

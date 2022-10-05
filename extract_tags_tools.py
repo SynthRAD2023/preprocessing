@@ -54,10 +54,10 @@ def extract_tags_post(image):
 def write_dict_to_csv(input_dict,output_csv,tag_list):
     
     # first check if dict is nested (required for file writing)
-    try:
-        input_dict[0]
+    
+    if any(isinstance(i,dict) for i in input_dict.values()):
         input_dict_nested = input_dict
-    except:
+    else:
         input_dict_nested = {}
         input_dict_nested['1']=input_dict
     
