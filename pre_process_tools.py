@@ -61,11 +61,19 @@ def register(fixed, moving, parameter, output):
     ##invert transform to get MR registered to CT
     inverse = transform_itk.GetInverse()
 
+    ## check if moving image is an mr or cbct
+    min_moving = np.amin(sitk.GetArrayFromImage(moving_image))
+    if min_moving <-500:
+        background = -1000
+    else:
+        background = 0
+
     ##transform MR image
     resample = sitk.ResampleImageFilter()
     resample.SetReferenceImage(fixed_image)
     resample.SetTransform(inverse)
     resample.SetInterpolator(sitk.sitkLinear)
+    resample.SetDefaultPixelValue(background)
     output_image = resample.Execute(moving_image)
 
     # write output image
