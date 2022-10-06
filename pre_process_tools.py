@@ -1,6 +1,8 @@
 import argparse
 import SimpleITK as sitk
 import numpy as np
+import matplotlib.pyplot as plt
+import os
 
 
 def convert_dicom_to_nifti(input, output):
@@ -144,6 +146,60 @@ def crop(input_image, mask_for_crop, output_image):
     LR = [np.min(idx_nz[2]) - 5, np.max(idx_nz[2]) + 5]
     cropped_image = image[LR[0]:LR[1], AP[0]:AP[1], IP[0]:IP[1]]
     sitk.WriteImage(cropped_image, output_image)
+
+def generate_overview(input_path,ref_path,mask_path,output_path,title=''):
+    #load images as np arrrays
+    ref_img = sitk.GetArrayFromImage(sitk.ReadImage(ref_path))
+    input_img = sitk.GetArrayFromImage(sitk.ReadImage(input_path))
+    mask_img = sitk.GetArrayFromImage(sitk.ReadImage(mask_path))
+
+    diff = input_img/(np.max(input_img))-ref_img/(np.max(ref_img))
+
+    # select central slices
+    im_shape = np.shape(ref_img)
+
+    # titles for subplots
+    titles = [  os.path.basename(os.path.normpath(input_path)),
+                os.path.basename(os.path.normpath(ref_path)),
+                os.path.basename(os.path.normpath(mask_path)),
+                'Difference'
+                ]
+
+    # make subplots axial, sagittal and coronal view
+    fig, ax = plt.subplots(3,4,figsize=(14,10))
+
+    fig.suptitle(title, fontsize=18,y=1.01)
+
+    ax[0][0].imshow(input_img[int(im_shape[0]/2),:,::-1],cmap='gray')
+    ax[0][1].imshow(ref_img[int(im_shape[0]/2),:,::-1],cmap='gray')
+    ax[0][2].imshow(mask_img[int(im_shape[0]/2),:,::-1],cmap='gray')
+    ax[0][3].imshow(diff[int(im_shape[0]/2),:,::-1],cmap='RdBu',vmin=-0.7,vmax=0.7)
+
+    for j in range(4):
+        ax[1][j].set_xticklabels([])
+        ax[1][j].set_yticklabels([])
+
+    ax[1][0].imshow(input_img[::-1,:,int(im_shape[2]/2)],cmap='gray')
+    ax[1][1].imshow(ref_img[::-1,:,int(im_shape[2]/2)],cmap='gray')
+    ax[1][2].imshow(mask_img[::-1,:,int(im_shape[2]/2)],cmap='gray')
+    ax[1][3].imshow(diff[::-1,:,int(im_shape[2]/2)],cmap='RdBu',vmin=-0.7,vmax=0.7)
+
+    for i in range(4):
+        ax[0][i].set_xticklabels([])
+        ax[0][i].set_yticklabels([])
+        ax[0][i].set_title(titles[i].split('.')[0])
+
+    ax[2][0].imshow(input_img[::-1,int(im_shape[1]/2),:],cmap='gray')
+    ax[2][1].imshow(ref_img[::-1,int(im_shape[1]/2),:],cmap='gray')
+    ax[2][2].imshow(mask_img[::-1,int(im_shape[1]/2),:],cmap='gray')
+    ax[2][3].imshow(diff[::-1,int(im_shape[1]/2),:],cmap='RdBu',vmin=-0.7,vmax=0.7)
+
+    for j in range(4):
+        ax[2][j].set_xticklabels([])
+        ax[2][j].set_yticklabels([])
+
+    plt.tight_layout()
+    plt.savefig(output_path,transparent=False,facecolor='white',bbox_inches='tight')
 
 
 if __name__ == "__main__":
