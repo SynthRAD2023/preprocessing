@@ -28,7 +28,7 @@ def get_number_of_slices(dcm_folder):
 
 # Function that takes a DICOM folder as an input, reads dicom tags from the first slice and returns specified tags as a dict,
 # and if specified also adds dimension and spacing of post-processed image
-def extract_tags(dcm_folder,tags,pre_processed=None,csv=None):
+def extract_tags(dcm_folder,tags,pre_processed=None,csv=None,pt=None):
     files = os.listdir(dcm_folder)
     tag_list = read_tags(tags)
     tags = dcm.dcmread(os.path.join(dcm_folder,files[0]),stop_before_pixels=True)
@@ -45,7 +45,10 @@ def extract_tags(dcm_folder,tags,pre_processed=None,csv=None):
         tags_dict['Dim_pre']=str(size_pre)
         tags_dict['Spacing_pre']=str(spacing_pre)
     if csv!=None:
-        write_dict_to_csv(tags_dict, csv, tag_list)
+        if pt != None:
+            write_dict_to_csv(tags_dict, csv, tag_list, pt)
+        else:
+            write_dict_to_csv(tags_dict, csv, tag_list)
     print(tags_dict)
     return tags_dict
 
@@ -56,15 +59,19 @@ def extract_tags_post(image):
     return [imsize,imspacing]
 
 # Function that creates a csv file based on the dicts with extracted tags
-def write_dict_to_csv(input_dict,output_csv,tag_list):
+def write_dict_to_csv(input_dict,output_csv,tag_list,pt):
     
     # first check if dict is nested (required for file writing)
-    
+
+    if pt != None:
+        input_dict['ID'] = pt
+        tag_list.insert(0,'ID')
+
     if any(isinstance(i,dict) for i in input_dict.values()):
         input_dict_nested = input_dict
     else:
         input_dict_nested = {'1': input_dict}
-
+#    print(input_dict_nested)
     tag_list.append('Slices')
     if 'Dim_pre' in input_dict:
         tag_list.append('Dim_pre')
@@ -113,6 +120,7 @@ if __name__ == "__main__":
     parser.add_argument('--path', help='path of the folder containing the dicom')
     parser.add_argument('--csv', help='path of the output csv file')
     parser.add_argument('--xlsx', help='path of the output excel file')
+    parser.add_argument('--pt', help='ID of the patient')
     args = parser.parse_args()
 
     if args.operation == 'extract':
@@ -122,7 +130,10 @@ if __name__ == "__main__":
             if args.csv is None:
                 extract_tags(args.path,args.tags,args.pre,csv=None)
             else:
-                extract_tags(args.path, args.tags, args.pre, args.csv)
+                if args.pt is None:
+                    extract_tags(args.path, args.tags, args.pre, args.csv, pt=None)
+                else:
+                    extract_tags(args.path, args.tags, args.pre, args.csv, args.pt)
     elif args.operation == 'toxlsx':
         convert_csv_to_xlsx(args.csv, args.xlsx, args.tags)
     else:
