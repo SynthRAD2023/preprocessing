@@ -1,15 +1,10 @@
 PatientName
-Modality
-Manufacturer
-ManufacturerModelName
-StudyDescription
-SeriesDescription
 PatientSex
 PatientAge
-SliceThickness
+Modality
+StudyDescription
+SeriesDescription
 KVP
-DataCollectionDiameter
-ReconstructionDiameter
 ExposureTime
 XRayTubeCurrent
 Exposure
@@ -18,3 +13,8 @@ CTDIvol
 Rows
 Columns
 PixelSpacing
+SliceThickness
+DataCollectionDiameter
+ReconstructionDiameter
+Manufacturer
+ManufacturerModelName

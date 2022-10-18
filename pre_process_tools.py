@@ -204,10 +204,11 @@ def generate_overview(input_path,ref_path,mask_path,output_path,title=''):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Define fixed, moving and output filenames')
-    parser.add_argument('operation', help='select operation to perform (register, convert, segment, mask_mr, mask_ct, resample)')
+    parser.add_argument('operation', help='select operation to perform (register, convert, segment, mask_mr, mask_ct, resample, correct,overview)')
     parser.add_argument('--f', help='fixed file path')
     parser.add_argument('--m', help='moving file path')
     parser.add_argument('--i', help='input file path (folder containing dicom series) for registration or resampling')
+    parser.add_argument('--ii', help='2nd input file path')
     parser.add_argument('--o', help='output file path')
     parser.add_argument('--p', help='parameter file path (if not specified generate default)')
     parser.add_argument('--s', help='spacing used for resampling (size of the image will be adjusted accordingly)',
@@ -233,15 +234,18 @@ if __name__ == "__main__":
         resample(args.i, args.o, tuple(args.s))
     elif args.operation == 'segment':
         segment(args.i, args.o, args.r)
+    elif args.operation == 'correct':
+        correct_mask_mr(args.i, args.ii, args.f, args.mask_crop, args.o)
+        # mr, ct, params, mask, output mask
     elif args.operation == 'mask_mr':
         #        print('arg mask_value= '+ args.mask_value)
         mask_mr(args.i, args.mask_in, args.o)
     elif args.operation == 'mask_ct':
         #        print('arg mask_value= '+ args.mask_value)
         mask_ct(args.i, args.mask_in, args.o)
+    elif args.operation == 'overview':
+        generate_overview(args.i, args.ii, args.mask_in, args.o)
     elif args.operation == 'crop':
         crop(args.i, args.mask_crop, args.o)
     else:
         print('check help for usage instructions')
-
-
