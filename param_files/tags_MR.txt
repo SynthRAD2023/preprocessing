@@ -1,8 +1,10 @@
 PatientName
 PatientSex
 PatientAge
+PatientBirthDate
 Modality
 MagneticFieldStrength
+StudyDate
 StudyDescription
 SeriesDescription
 ScanningSequence

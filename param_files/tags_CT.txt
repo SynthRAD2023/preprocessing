@@ -1,7 +1,9 @@
 PatientName
 PatientSex
 PatientAge
+PatientBirthDate
 Modality
+StudyDate
 StudyDescription
 SeriesDescription
 KVP

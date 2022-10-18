@@ -1,7 +1,11 @@
 PatientName
-Modality
-SeriesDescription
 PatientSex
+PatientAge
+PatientBirthDate
+Modality
+StudyDate
+StudyDescription
+SeriesDescription
 KVP
 ExposureTime
 XRayTubeCurrent
