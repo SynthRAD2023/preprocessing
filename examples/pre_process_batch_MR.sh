@@ -85,10 +85,10 @@ do
 # Extract from dicom to csv/excel
 
    python ../extract_tags_tools.py extract --path ${dirMR}Dcm/ --tags ${tags_MR} --pre ${TMP}mr_crop.nii.gz \
-   --csv ${dirOut}overview/MR_UMCU_brain.csv
+   --csv ${dirOut}overview/MR_UMCU_brain.csv --pt $pts --phase $phase
 
    python ../extract_tags_tools.py extract --path ${dirCT}Dcm/ --tags ${tags_CT} --pre ${TMP}ct_crop.nii.gz \
-   --csv ${dirOut}overview/CT_UMCU_brain.csv
+   --csv ${dirOut}overview/CT_UMCU_brain.csv --pt $pts --phase $phase
 
 <<'Comm'
 
