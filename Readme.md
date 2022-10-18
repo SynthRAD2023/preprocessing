@@ -115,21 +115,23 @@ The Elastix parameter files adopted can be found in ``param_files``.
 If desired, it is also possible to:
 * Apply the mask MRI and CT;
 
-Each of the task can be run as a subfunction of the main file, as describe in the next section.
+Each task can be run as a subfunction of the main file, as described in the next section.
 
-Examples on how to run for multiple patients can be found in the directory ``examples``:
+Examples of how to run for multiple patients can be found in the directory ``examples``:
 * ``pre_process_batch_MR.py`` for python-based pre-processing;
 * ``pre_process_batch_MR.sh`` for bash-based (terminal) pre-processing in Unix. This file reads the list
 of patients provided in ``pat_list_brain_mri2ct.txt``.
 
 The file ``extract_tags_tools.py`` provides functions to:
 * Read a list of tags from a text file;
-* Extract tags from dicom files and returns a dict containing the key:value pairs
-* Get dimension and spacing of pre-processed images
-* Write the tags to a csv/excel file
+* Extract tags from dicom files and returns a dictionary containing the key: value pairs
+* Get dimensions and spacing of pre-processed images
+* Write the tags to a CSV/excel file
 
 An example of a tag extraction is provided in the directory examples:
-*  ``extract_tags_UMCG.py`` shows an example on how to use the above functions for a dataset containing multiple patients and images.
+*  ``extract_tags_UMCG.py`` shows an example of how to use the above functions for a dataset containing multiple patients and images directly in python;
+*  ``pre_process_batch_MR.sh`` contains instructions on how to call the above functions from the terminal.
+
 
 ## Functions Descriptions
 ### Pre-processing:
