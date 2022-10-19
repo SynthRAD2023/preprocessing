@@ -3,6 +3,7 @@ import SimpleITK as sitk
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from operator import mul
 
 
 def convert_dicom_to_nifti(input, output):
@@ -97,8 +98,8 @@ def segment(input_image, output_mask, radius=(12, 12, 12)):
     largest_component_binary_image = sorted_component_image == 1
     mask_closed = sitk.BinaryMorphologicalClosing(largest_component_binary_image, (12, 12, 12))
     dilated_mask = sitk.BinaryDilate(mask_closed, (10, 10, 0))
-#    filled_mask = sitk.BinaryFillhole(dilated_mask)
-    sitk.WriteImage(dilated_mask, output_mask)
+    filled_mask = sitk.BinaryFillhole(dilated_mask)
+    sitk.WriteImage(filled_mask, output_mask)
 
 def correct_mask_mr(mr,ct,transform,mask,mask_corrected):
     # load inputs
@@ -129,7 +130,6 @@ def correct_mask_mr(mr,ct,transform,mask,mask_corrected):
     mask_corrected_im.CopyInformation(mask_im)
     sitk.WriteImage(mask_corrected_im, mask_corrected)
 
-
 def mask_ct(input_image, input_mask, output_image):
     image = sitk.ReadImage(input_image)
     mask = sitk.ReadImage(input_mask)
@@ -155,7 +155,8 @@ def crop(input_image, mask_for_crop, output_image):
 
 def generate_overview(input_path,ref_path,mask_path,output_path,title=''):
     #load images as np arrrays
-    ref_img = sitk.GetArrayFromImage(sitk.ReadImage(ref_path))
+    im=sitk.ReadImage(ref_path)
+    ref_img = sitk.GetArrayFromImage(im)
     input_img = sitk.GetArrayFromImage(sitk.ReadImage(input_path))
     mask_img = sitk.GetArrayFromImage(sitk.ReadImage(mask_path))
 
@@ -163,6 +164,8 @@ def generate_overview(input_path,ref_path,mask_path,output_path,title=''):
 
     # select central slices
     im_shape = np.shape(ref_img)
+    #ext = tuple(map(mul, im.GetSpacing(), im_shape))
+    ext=im.GetSpacing()
 
     # titles for subplots
     titles = [  os.path.basename(os.path.normpath(input_path)),
@@ -176,29 +179,29 @@ def generate_overview(input_path,ref_path,mask_path,output_path,title=''):
 
     fig.suptitle(title, fontsize=18,y=1.01)
 
-    ax[0][0].imshow(input_img[int(im_shape[0]/2),:,::-1],cmap='gray')
-    ax[0][1].imshow(ref_img[int(im_shape[0]/2),:,::-1],cmap='gray')
-    ax[0][2].imshow(mask_img[int(im_shape[0]/2),:,::-1],cmap='gray')
-    ax[0][3].imshow(diff[int(im_shape[0]/2),:,::-1],cmap='RdBu',vmin=-0.7,vmax=0.7)
+    ax[0][0].imshow(input_img[int(im_shape[0]/2),:,::-1],cmap='gray',extent=[0, ext[0], 0, ext[1]])
+    ax[0][1].imshow(ref_img[int(im_shape[0]/2),:,::-1],cmap='gray',extent=[0, ext[0], 0, ext[1]])
+    ax[0][2].imshow(mask_img[int(im_shape[0]/2),:,::-1],cmap='gray',extent=[0, ext[0], 0, ext[1]])
+    ax[0][3].imshow(diff[int(im_shape[0]/2),:,::-1],cmap='RdBu',vmin=-0.7,vmax=0.7,extent=[0, ext[0], 0, ext[1]])
 
     for j in range(4):
         ax[1][j].set_xticklabels([])
         ax[1][j].set_yticklabels([])
 
-    ax[1][0].imshow(input_img[::-1,:,int(im_shape[2]/2)],cmap='gray')
-    ax[1][1].imshow(ref_img[::-1,:,int(im_shape[2]/2)],cmap='gray')
-    ax[1][2].imshow(mask_img[::-1,:,int(im_shape[2]/2)],cmap='gray')
-    ax[1][3].imshow(diff[::-1,:,int(im_shape[2]/2)],cmap='RdBu',vmin=-0.7,vmax=0.7)
+    ax[1][0].imshow(input_img[::-1,:,int(im_shape[2]/2)],cmap='gray',extent=[0, ext[0], 0, ext[2]])
+    ax[1][1].imshow(ref_img[::-1,:,int(im_shape[2]/2)],cmap='gray',extent=[0, ext[0], 0, ext[2]])
+    ax[1][2].imshow(mask_img[::-1,:,int(im_shape[2]/2)],cmap='gray',extent=[0, ext[0], 0, ext[2]])
+    ax[1][3].imshow(diff[::-1,:,int(im_shape[2]/2)],cmap='RdBu',vmin=-0.7,vmax=0.7,extent=[0, ext[0], 0, ext[2]])
 
     for i in range(4):
         ax[0][i].set_xticklabels([])
         ax[0][i].set_yticklabels([])
         ax[0][i].set_title(titles[i].split('.')[0])
 
-    ax[2][0].imshow(input_img[::-1,int(im_shape[1]/2),:],cmap='gray')
-    ax[2][1].imshow(ref_img[::-1,int(im_shape[1]/2),:],cmap='gray')
-    ax[2][2].imshow(mask_img[::-1,int(im_shape[1]/2),:],cmap='gray')
-    ax[2][3].imshow(diff[::-1,int(im_shape[1]/2),:],cmap='RdBu',vmin=-0.7,vmax=0.7)
+    ax[2][0].imshow(input_img[::-1,int(im_shape[1]/2),:],cmap='gray',extent=[0, ext[0], 0, ext[1]])
+    ax[2][1].imshow(ref_img[::-1,int(im_shape[1]/2),:],cmap='gray',extent=[0, ext[0], 0, ext[1]])
+    ax[2][2].imshow(mask_img[::-1,int(im_shape[1]/2),:],cmap='gray',extent=[0, ext[0], 0, ext[1]])
+    ax[2][3].imshow(diff[::-1,int(im_shape[1]/2),:],cmap='RdBu',vmin=-0.7,vmax=0.7,extent=[0, ext[0], 0, ext[1]])
 
     for j in range(4):
         ax[2][j].set_xticklabels([])
@@ -251,4 +254,9 @@ if __name__ == "__main__":
         mask_ct(args.i, args.mask_in, args.o)
     elif args.operation == 'overview':
         generate_overview(args.i, args.ii, args.mask_in, args.o)
-    elif args.operatio
+    elif args.operation == 'crop':
+        crop(args.i, args.mask_crop, args.o)
+    elif args.operation == 'clean':
+        clean_border(args.i, args.o)
+    else:
+        print('check help for usage instructions')
