@@ -153,7 +153,7 @@ def crop(input_image, mask_for_crop, output_image):
         AP = [np.min(idx_nz[1]) - np.min(idx_nz[1]), np.max(idx_nz[1]) + 10]
     else:
         AP = [np.min(idx_nz[1]) - border, np.max(idx_nz[1]) + border]
-    if np.min(idx_nz[1]) < border:
+    if np.min(idx_nz[2]) < border:
         LR = [np.min(idx_nz[2]) - np.min(idx_nz[2]), np.max(idx_nz[2]) + 10]
     else:
         LR = [np.min(idx_nz[2]) - border, np.max(idx_nz[2]) + border]
