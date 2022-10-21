@@ -159,13 +159,51 @@ def generate_overview(input_path,ref_path,mask_path,output_path,title=''):
     ref_img = sitk.GetArrayFromImage(im)
     input_img = sitk.GetArrayFromImage(sitk.ReadImage(input_path))
     mask_img = sitk.GetArrayFromImage(sitk.ReadImage(mask_path))
+    
+    # attempt of 'normalizing' images for difference calculations
+    if np.max(ref_img)>3000:
+        max_ref = 3000
+    else:
+        max_ref = np.max(ref_img)
+    
+    if np.max(input_img)>2000:
+        max_in = 2000
+    else:
+        max_in = np.max(input_img)
 
-    diff = input_img/(np.max(input_img))-ref_img/(np.max(ref_img))
+    input_norm = (input_img+np.abs(np.min(input_img)))/(max_in+np.abs(np.min(input_img)))
+    ref_norm = (ref_img+np.abs(np.min(ref_img)))/(max_ref+np.abs(np.min(ref_img)))
+    diff = input_norm - ref_norm
 
     # select central slices
     im_shape = np.shape(ref_img)
-    #ext = tuple(map(mul, im.GetSpacing(), im_shape))
-    ext=im.GetSpacing()
+
+    #aspect ratio for plots
+    spacing=list(im.GetSpacing())
+    spacing.reverse() #SimpleITK to numpy conversion
+    asp_ax = spacing[1]*spacing[2]
+    asp_sag = spacing[0]*spacing[1]
+    asp_cor = spacing[0]*spacing[2]
+
+    #window/level for CBCT/MR (called input)
+    if np.min(input_img)<-500: #CBCT
+        if spacing[0]==1:   #brain
+            w_i = 2500
+            l_i = 250
+        else:               #pelvis
+            w_i = 1200
+            l_i = -400
+    else: #MR
+        if spacing[0]==1:   #brain
+            w_i = 600
+            l_i = 280
+        else:               #pelvis
+            w_i = 600
+            l_i = 280
+    
+    #window/level for CT (called ref)
+    w_r = 2500
+    l_r = 200
 
     # titles for subplots
     titles = [  os.path.basename(os.path.normpath(input_path)),
@@ -179,29 +217,29 @@ def generate_overview(input_path,ref_path,mask_path,output_path,title=''):
 
     fig.suptitle(title, fontsize=18,y=1.01)
 
-    ax[0][0].imshow(input_img[int(im_shape[0]/2),:,::-1],cmap='gray',extent=[0, ext[0], 0, ext[1]])
-    ax[0][1].imshow(ref_img[int(im_shape[0]/2),:,::-1],cmap='gray',extent=[0, ext[0], 0, ext[1]])
-    ax[0][2].imshow(mask_img[int(im_shape[0]/2),:,::-1],cmap='gray',extent=[0, ext[0], 0, ext[1]])
-    ax[0][3].imshow(diff[int(im_shape[0]/2),:,::-1],cmap='RdBu',vmin=-0.7,vmax=0.7,extent=[0, ext[0], 0, ext[1]])
+    ax[0][0].imshow(input_img[int(im_shape[0]/2),:,::-1],cmap='gray',aspect=asp_ax,vmin=l_i-w_i/2,vmax=l_i+w_i/2)
+    ax[0][1].imshow(ref_img[int(im_shape[0]/2),:,::-1],cmap='gray',aspect=asp_ax,vmin=l_r-w_r/2,vmax=l_r+w_r/2)
+    ax[0][2].imshow(mask_img[int(im_shape[0]/2),:,::-1],cmap='gray',aspect=asp_ax)
+    ax[0][3].imshow(diff[int(im_shape[0]/2),:,::-1],cmap='RdBu',aspect=asp_ax,vmin=-0.3,vmax=0.3)
 
     for j in range(4):
         ax[1][j].set_xticklabels([])
         ax[1][j].set_yticklabels([])
 
-    ax[1][0].imshow(input_img[::-1,:,int(im_shape[2]/2)],cmap='gray',extent=[0, ext[0], 0, ext[2]])
-    ax[1][1].imshow(ref_img[::-1,:,int(im_shape[2]/2)],cmap='gray',extent=[0, ext[0], 0, ext[2]])
-    ax[1][2].imshow(mask_img[::-1,:,int(im_shape[2]/2)],cmap='gray',extent=[0, ext[0], 0, ext[2]])
-    ax[1][3].imshow(diff[::-1,:,int(im_shape[2]/2)],cmap='RdBu',vmin=-0.7,vmax=0.7,extent=[0, ext[0], 0, ext[2]])
+    ax[1][0].imshow(input_img[::-1,:,int(im_shape[2]/2)],cmap='gray',aspect=asp_sag,vmin=l_i-w_i/2,vmax=l_i+w_i/2)
+    ax[1][1].imshow(ref_img[::-1,:,int(im_shape[2]/2)],cmap='gray',aspect=asp_sag,vmin=l_r-w_r/2,vmax=l_r+w_r/2)
+    ax[1][2].imshow(mask_img[::-1,:,int(im_shape[2]/2)],cmap='gray',aspect=asp_sag)
+    ax[1][3].imshow(diff[::-1,:,int(im_shape[2]/2)],cmap='RdBu',aspect=asp_sag,vmin=-0.3,vmax=0.3)
 
     for i in range(4):
         ax[0][i].set_xticklabels([])
         ax[0][i].set_yticklabels([])
         ax[0][i].set_title(titles[i].split('.')[0])
 
-    ax[2][0].imshow(input_img[::-1,int(im_shape[1]/2),:],cmap='gray',extent=[0, ext[0], 0, ext[1]])
-    ax[2][1].imshow(ref_img[::-1,int(im_shape[1]/2),:],cmap='gray',extent=[0, ext[0], 0, ext[1]])
-    ax[2][2].imshow(mask_img[::-1,int(im_shape[1]/2),:],cmap='gray',extent=[0, ext[0], 0, ext[1]])
-    ax[2][3].imshow(diff[::-1,int(im_shape[1]/2),:],cmap='RdBu',vmin=-0.7,vmax=0.7,extent=[0, ext[0], 0, ext[1]])
+    ax[2][0].imshow(input_img[::-1,int(im_shape[1]/2),::-1],cmap='gray',aspect=asp_cor,vmin=l_i-w_i/2,vmax=l_i+w_i/2)
+    ax[2][1].imshow(ref_img[::-1,int(im_shape[1]/2),::-1],cmap='gray',aspect=asp_cor,vmin=l_r-w_r/2,vmax=l_r+w_r/2)
+    ax[2][2].imshow(mask_img[::-1,int(im_shape[1]/2),::-1],cmap='gray',aspect=asp_cor)
+    ax[2][3].imshow(diff[::-1,int(im_shape[1]/2),::-1],cmap='RdBu',aspect=asp_cor,vmin=-0.3,vmax=0.3)
 
     for j in range(4):
         ax[2][j].set_xticklabels([])
