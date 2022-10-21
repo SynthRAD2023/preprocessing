@@ -148,8 +148,15 @@ def crop(input_image, mask_for_crop, output_image):
     mask_np = sitk.GetArrayFromImage(mask)
     idx_nz = np.nonzero(mask_np)
     IP = [np.min(idx_nz[0]) , np.max(idx_nz[0]) ]
-    AP = [np.min(idx_nz[1]) - 10, np.max(idx_nz[1]) + 10]
-    LR = [np.min(idx_nz[2]) - 10, np.max(idx_nz[2]) + 10]
+    border=10
+    if  np.min(idx_nz[1])<border:
+        AP = [np.min(idx_nz[1]) - np.min(idx_nz[1]), np.max(idx_nz[1]) + 10]
+    else:
+        AP = [np.min(idx_nz[1]) - border, np.max(idx_nz[1]) + border]
+    if np.min(idx_nz[2]) < border:
+        LR = [np.min(idx_nz[2]) - np.min(idx_nz[2]), np.max(idx_nz[2]) + 10]
+    else:
+        LR = [np.min(idx_nz[2]) - border, np.max(idx_nz[2]) + border]
     cropped_image = image[LR[0]:LR[1], AP[0]:AP[1], IP[0]:IP[1]]
     sitk.WriteImage(cropped_image, output_image)
 
