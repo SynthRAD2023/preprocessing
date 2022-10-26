@@ -26,6 +26,13 @@ def resample(input, output, spacing):
                                     -1000.0, sitk.sitkInt16)
     sitk.WriteImage(image_resampled, output)
 
+def limit_pixel_values(input_fn, output_fn,low_val=-1024):
+    input_im = sitk.ReadImage(input_fn)
+    input_np = sitk.GetArrayFromImage(input_im)
+    input_np[input_np<low_val]=low_val
+    output_im = sitk.GetImageFromArray(input_np)
+    output_im.CopyInformation(input_im)
+    sitk.WriteImage(output_im,output_fn)
 
 def read_parameter_map(parameter_fn):
     return sitk.ReadParameterFile(parameter_fn)
@@ -90,7 +97,7 @@ def clean_border(input_image, output_image):
     im2.CopyInformation(im)
     sitk.WriteImage(im2, output_image)
 
-def segment(input_image, output_mask, radius=(12, 12, 12)):
+def segment(input_image, output_mask=None, radius=(12, 12, 12),return_sitk=False):
     image = sitk.InvertIntensity(sitk.Cast(sitk.ReadImage(input_image),sitk.sitkFloat32))
     mask = sitk.OtsuThreshold(image)
     component_image = sitk.ConnectedComponent(mask)
@@ -99,7 +106,74 @@ def segment(input_image, output_mask, radius=(12, 12, 12)):
     mask_closed = sitk.BinaryMorphologicalClosing(largest_component_binary_image, (12, 12, 12))
     dilated_mask = sitk.BinaryDilate(mask_closed, (10, 10, 0))
     filled_mask = sitk.BinaryFillhole(dilated_mask)
-    sitk.WriteImage(filled_mask, output_mask)
+    if return_sitk:
+        return filled_mask
+    else:
+        sitk.WriteImage(filled_mask, output_mask)
+
+def create_FOV_cbct(cbct,output_mask=None,return_sitk=False):
+    
+    def create_circular_mask(h, w, center, radius):
+        Y, X = np.ogrid[:h, :w]
+        dist_from_center = np.sqrt((X - center[0])**2 + (Y-center[1])**2)
+        mask = dist_from_center <= radius
+        return mask
+
+    im = sitk.ReadImage(cbct)
+    im_np = sitk.GetArrayFromImage(im)
+    dim = np.shape(im_np)
+
+    #define center and radius of FOV
+    centerX = dim[1]/2
+    centerY = dim[2]/2
+    radius = dim[1]/2-1
+
+    #create a mask of this FOV for each slice
+    cbct_mask=np.zeros((dim[0],dim[1],dim[2]),int)
+    for i in range(dim[0]-1):
+        cbct_mask[i+1,:,:]=create_circular_mask(dim[1],dim[2],(centerX,centerY),radius)
+    cbct_mask=cbct_mask.astype(int)
+
+    # limit first and last slices to smaller radii
+    for j in range(1,14):
+        cbct_mask[j]=create_circular_mask(dim[1],dim[2],(centerX,centerY),18+(j-1)*15)
+        cbct_mask[-j]=create_circular_mask(dim[1],dim[2],(centerX,centerY),18+(j-1)*15)
+
+    mask_itk = sitk.GetImageFromArray(cbct_mask)
+    mask_itk.CopyInformation(im)
+    castFilter = sitk.CastImageFilter()
+    castFilter.SetOutputPixelType(sitk.sitkInt16)
+    imgFiltered = castFilter.Execute(mask_itk)
+    if return_sitk:
+        return imgFiltered
+    sitk.WriteImage(imgFiltered,output_mask)
+
+def transform_mask(input_mask,ref_img,trans_file): 
+    # function to transform a mask using the previously calculated (rigid) registration parameters
+    # this function uses images as inputs not filepaths, so reading the files has to be performed outside 
+    tf = sitk.ReadTransform(trans_file) 
+    tf = tf.GetInverse()
+    default_value=0
+    interpolator=sitk.sitkNearestNeighbor
+    mask_reg = sitk.Resample(input_mask,ref_img,tf,interpolator,default_value)
+    return mask_reg
+
+def generate_mask_cbct_pelvis(ct,cbct,trans_file,output_fn=None,return_sitk=False):
+    limit_pixel_values(ct,ct)
+    ct_im = sitk.ReadImage(ct)
+    cbct_im = sitk.ReadImage(cbct)
+    mask_ct = segment(ct,return_sitk=True)
+    cbct_fov = create_FOV_cbct(cbct,return_sitk=True)
+    fov_reg = transform_mask(cbct_fov,ct_im,trans_file)
+    mask_ct_np = sitk.GetArrayFromImage(mask_ct)
+    cbct_fov_np = sitk.GetArrayFromImage(fov_reg)
+    mask_cbct_np = mask_ct_np*cbct_fov_np
+    mask_cbct = sitk.GetImageFromArray(mask_cbct_np)
+    mask_cbct.CopyInformation(mask_ct)
+    if return_sitk:
+        return mask_cbct
+    else:
+        sitk.WriteImage(mask_cbct,output_fn)
 
 def correct_mask_mr(mr,ct,transform,mask,mask_corrected):
     # load inputs
@@ -115,10 +189,7 @@ def correct_mask_mr(mr,ct,transform,mask,mask_corrected):
     fov.CopyInformation(mr_im)
 
     # transform mask to registered mr
-    tf = tf.GetInverse()
-    default_value=0
-    interpolator=sitk.sitkNearestNeighbor
-    fov_reg = sitk.Resample(fov,ct_im,tf,interpolator,default_value)
+    fov_reg = transform_mask(fov,ct_im,transform)
     
     # correct MR mask with fov_reg box
     fov_np = sitk.GetArrayFromImage(fov_reg)

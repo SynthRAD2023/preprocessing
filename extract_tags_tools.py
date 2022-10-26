@@ -59,7 +59,7 @@ def extract_tags_post(image):
     return [imsize,imspacing]
 
 # Function that creates a csv file based on the dicts with extracted tags
-def write_dict_to_csv(input_dict,output_csv,tag_list,pt,phase):
+def write_dict_to_csv(input_dict,output_csv,tag_list,pt=None,phase=None):
     
     # first check if dict is nested (required for file writing)
 
@@ -102,8 +102,12 @@ def convert_csv_to_xlsx(input_csv, output_xlsx, sheetname=None):
             csv_data.append(row)
     if os.path.isfile(output_xlsx):
         workbook = openpyxl.load_workbook(output_xlsx)
-        std = workbook['Sheet']
-        workbook.remove(std)
+        try:
+            std = workbook['Sheet']
+            workbook.remove(std)
+        except:
+            print('Worksheet Sheet already removed')
+        
     else:
         workbook = openpyxl.Workbook()
     workbook.create_sheet(sheetname)
