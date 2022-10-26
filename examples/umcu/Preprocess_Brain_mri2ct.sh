@@ -8,11 +8,12 @@ Center='A'
 AnatomicalSite='B'
 Site='brain'
 initial='/nfs/arch11/researchData/PROJECT/MRonlyTP/Gen_sCT/data/'
-dirOut='/nfs/arch11/researchData/PROJECT/SynthRAD/2023/dataset_UMCU/Task1/'${Site}'/'
+dirOut='/nfs/arch11/researchData/PROJECT/SynthRAD/2023/dataset_UMCU/Task'${Task}'/'${Site}'/'
 
-Flag_preproc=1234 	# set the flag to 1234 to activate the download
-Flag_extract=123
-Flag_remove=1234   # this is for full debug
+Flag_preproc=123 	# set the flag to 1234 to activate the download
+Flag_extract=1234
+Flag_overview=1234
+Flag_remove=123   # this is for full debug
 
 if [ $Flag_extract == '1234' ]; then
   rm ${dirOut}overview/MR_UMCU_${Site}.csv
@@ -21,7 +22,7 @@ if [ $Flag_extract == '1234' ]; then
 fi
 ## these paths contain all the fixed provided tools
 ## not to be modified by the user
-preproc='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/pre_process_tools.py'
+preproc='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/pre_process_tools_umc.py'
 extract='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/extract_tags_tools_umc.py'
 
 tags_MR='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/param_files/tags_MR.txt'
@@ -99,10 +100,6 @@ Ciao
 #Mask CT, not used
   python ${preproc} segment --i ${TMP}CT_cropped.nii.gz --o ${TMP}mask_CT.nii.gz
 
-#Generate overview
-  python ${preproc} overview --i ${TMP}MR_cropped.nii.gz --ii ${TMP}CT_cropped.nii.gz --mask_in  ${TMP}mask_cropped.nii.gz \
-   --o ${dirOut}overview/${pts}_mr_ct_mask_${phase}.png
-
 #Crop to dilated mask_MR
   #python ${preproc} crop --i ${TMP}ct_resampled.nii.gz --mask_crop ${TMP}mask_MR.nii.gz --o ${TMP}ct_cropped.nii.gz
   #python ${preproc} crop --i ${TMP}mr_T1_registered.nii.gz --mask_crop ${TMP}mask_MR.nii.gz --o ${TMP}mr_cropped.nii.gz
@@ -115,6 +112,12 @@ Ciao
       mv ${TMP}CT_cropped.nii.gz ${TMP}ct_crop.nii.gz
       mv ${TMP}MR_cropped.nii.gz ${TMP}mr_crop.nii.gz
     fi
+  fi
+
+  if [ $Flag_overview == '1234' ]; then
+#Generate overview
+  python ${preproc} overview --i ${TMP}mr_crop.nii.gz --ii ${TMP}ct_crop.nii.gz --mask_in  ${TMP}mask_crop.nii.gz \
+   --o ${dirOut}overview/${pts}_mr_ct_mask_${phase}.png
   fi
 
   if [ $Flag_extract == '1234' ]; then

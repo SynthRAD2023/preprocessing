@@ -20,3 +20,5 @@ DataCollectionDiameter
 ReconstructionDiameter
 Manufacturer
 ManufacturerModelName
+StationName
+SoftwareVersions

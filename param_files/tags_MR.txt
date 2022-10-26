@@ -27,4 +27,6 @@ PixelSpacing
 AcquisitionMatrix
 Manufacturer
 ManufacturerModelName
+StationName
 SoftwareVersions
+

@@ -10,9 +10,10 @@ Site='brain'
 initial='/nfs/arch11/researchData/PROJECT/CBCTreplan/SynthRAD/2023/Brain/'
 dirOut='/nfs/arch11/researchData/PROJECT/SynthRAD/2023/dataset_UMCU/Task'${Task}'/'${Site}'/'
 
-Flag_preproc=1234 	# set the flag to 1234 to activate the download
+Flag_preproc=123 	# set the flag to 1234 to activate the download
+Flag_overview=1234
 Flag_extract=1234
-Flag_remove=123   # this is for full debug
+Flag_remove=1234   # this is for full debug
 
 if [ $Flag_extract == '1234' ]; then
   rm ${dirOut}overview/CBCT_UMCU_${Site}.csv
@@ -21,7 +22,7 @@ if [ $Flag_extract == '1234' ]; then
 fi
 ## these paths contain all the fixed provided tools
 ## not to be modified by the user
-preproc='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/pre_process_tools.py'
+preproc='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/pre_process_tools_umc.py'
 extract='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/extract_tags_tools_umc.py'
 
 tags_CBCT='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/param_files/tags_CBCT.txt'
@@ -106,9 +107,6 @@ Ciao
 #Mask CT, not used
   python ${preproc} segment --i ${TMP}ct_crop.nii.gz --o ${TMP}mask_CT.nii.gz
 
-#Generate overview
-  python ${preproc} overview --i ${TMP}cbct_crop.nii.gz --ii ${TMP}ct_crop.nii.gz --mask_in  ${TMP}mask_crop.nii.gz \
-   --o ${dirOut}overview/${pts}_cbct_ct_mask_${phase}.png
 
 #Crop to dilated mask_CBCT
   #python ${preproc} crop --i ${TMP}ct_resampled.nii.gz --mask_crop ${TMP}mask_CBCT.nii.gz --o ${TMP}ct_cropped.nii.gz
@@ -117,19 +115,27 @@ Ciao
 Ciao
   fi
 
+  if [ $Flag_overview == '1234' ]; then
+#Generate overview
+  python ${preproc} overview --i ${TMP}cbct_crop.nii.gz --ii ${TMP}ct_crop.nii.gz --mask_in  ${TMP}mask_crop.nii.gz \
+   --o ${dirOut}overview/${pts}_cbct_ct_mask_${phase}.png
+  fi
+
+#Generate overview
+  python ${preproc} overview --i ${TMP}cbct_crop.nii.gz --ii ${TMP}ct_crop.nii.gz --mask_in  ${TMP}mask_crop.nii.gz \
+   --o ${dirOut}overview/${pts}_cbct_ct_mask_${phase}.png
   if [ $Flag_remove == '1234' ]; then
     echo "Removing "
       rm ${TMP}ct_o* ${TMP}ct_r* ${TMP}cbct_r* ${TMP}cbct_o* ${TMP}mask_C*
   fi
 
   if [ $Flag_extract == '1234' ]; then
-
 # Extract from dicom to csv/excel
 #Extracting dicomtags to csv
 
   echo -e $Dcm_CBCT
 
-   python ${extract} extract --path ${Dcm_CT} --tags ${tags_CBCT} --pre ${TMP}cbct_crop.nii.gz \
+   python ${extract} extract --path ${Dcm_CBCT} --tags ${tags_CBCT} --pre ${TMP}cbct_crop.nii.gz \
    --csv ${dirOut}overview/CBCT_UMCU_${Site}.csv --pt $pts --phase $phase
 
    python ${extract} extract --path ${Dcm_CT} --tags ${tags_CT} --pre ${TMP}ct_crop.nii.gz \
