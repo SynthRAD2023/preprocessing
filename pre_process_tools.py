@@ -295,7 +295,7 @@ def generate_overview(input_path,ref_path,mask_path,output_path,title=''):
 
     fig.suptitle(title, fontsize=18,y=1.01)
 
-    ax[0][0].imshow(input_img[int(im_shape[0]/2),:,::-1],cmap='gray',aspect=asp_ax,vmin=l_i-w_i/2,vmax=l_i+w_i/2)
+    ax[0][0].imshow(input_img[int(im_shape[0]/2),:,::-1],cmap='gray',aspect=asp_ax)#,vmin=l_i-w_i/2,vmax=l_i+w_i/2)
     ax[0][1].imshow(ref_img[int(im_shape[0]/2),:,::-1],cmap='gray',aspect=asp_ax,vmin=l_r-w_r/2,vmax=l_r+w_r/2)
     ax[0][2].imshow(mask_img[int(im_shape[0]/2),:,::-1],cmap='gray',aspect=asp_ax)
     ax[0][3].imshow(diff[int(im_shape[0]/2),:,::-1],cmap='RdBu',aspect=asp_ax,vmin=-0.3,vmax=0.3)
@@ -304,7 +304,7 @@ def generate_overview(input_path,ref_path,mask_path,output_path,title=''):
         ax[1][j].set_xticklabels([])
         ax[1][j].set_yticklabels([])
 
-    ax[1][0].imshow(input_img[::-1,:,int(im_shape[2]/2)],cmap='gray',aspect=asp_sag,vmin=l_i-w_i/2,vmax=l_i+w_i/2)
+    ax[1][0].imshow(input_img[::-1,:,int(im_shape[2]/2)],cmap='gray',aspect=asp_sag)#,vmin=l_i-w_i/2,vmax=l_i+w_i/2)
     ax[1][1].imshow(ref_img[::-1,:,int(im_shape[2]/2)],cmap='gray',aspect=asp_sag,vmin=l_r-w_r/2,vmax=l_r+w_r/2)
     ax[1][2].imshow(mask_img[::-1,:,int(im_shape[2]/2)],cmap='gray',aspect=asp_sag)
     ax[1][3].imshow(diff[::-1,:,int(im_shape[2]/2)],cmap='RdBu',aspect=asp_sag,vmin=-0.3,vmax=0.3)
@@ -314,7 +314,7 @@ def generate_overview(input_path,ref_path,mask_path,output_path,title=''):
         ax[0][i].set_yticklabels([])
         ax[0][i].set_title(titles[i].split('.')[0])
 
-    ax[2][0].imshow(input_img[::-1,int(im_shape[1]/2),::-1],cmap='gray',aspect=asp_cor,vmin=l_i-w_i/2,vmax=l_i+w_i/2)
+    ax[2][0].imshow(input_img[::-1,int(im_shape[1]/2),::-1],cmap='gray',aspect=asp_cor)#,vmin=l_i-w_i/2,vmax=l_i+w_i/2)
     ax[2][1].imshow(ref_img[::-1,int(im_shape[1]/2),::-1],cmap='gray',aspect=asp_cor,vmin=l_r-w_r/2,vmax=l_r+w_r/2)
     ax[2][2].imshow(mask_img[::-1,int(im_shape[1]/2),::-1],cmap='gray',aspect=asp_cor)
     ax[2][3].imshow(diff[::-1,int(im_shape[1]/2),::-1],cmap='RdBu',aspect=asp_cor,vmin=-0.3,vmax=0.3)
@@ -329,7 +329,8 @@ def generate_overview(input_path,ref_path,mask_path,output_path,title=''):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Define fixed, moving and output filenames')
-    parser.add_argument('operation', help='select operation to perform (register, convert, segment, mask_mr, mask_ct,resample, correct,overview, clean)')
+    parser.add_argument('operation', help='select operation to perform (register, convert, segment, mask_mr, mask_ct,'+\
+    ' resample, correct,overview, clean)')
     parser.add_argument('--f', help='fixed file path')
     parser.add_argument('--m', help='moving file path')
     parser.add_argument('--i', help='input file path (folder containing dicom series) for registration or resampling')
@@ -368,6 +369,9 @@ if __name__ == "__main__":
     elif args.operation == 'mask_ct':
         #        print('arg mask_value= '+ args.mask_value)
         mask_ct(args.i, args.mask_in, args.o)
+    elif args.operation == 'mask_cbct':
+        generate_mask_cbct_pelvis(args.i, args.mask_in, args.p, args.o)
+#        def generate_mask_cbct_pelvis(ct, cbct, trans_file, output_fn=None, return_sitk=False):
     elif args.operation == 'overview':
         generate_overview(args.i, args.ii, args.mask_in, args.o)
     elif args.operation == 'crop':
