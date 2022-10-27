@@ -371,7 +371,6 @@ if __name__ == "__main__":
         mask_ct(args.i, args.mask_in, args.o)
     elif args.operation == 'mask_cbct':
         generate_mask_cbct_pelvis(args.i, args.mask_in, args.p, args.o)
-#        def generate_mask_cbct_pelvis(ct, cbct, trans_file, output_fn=None, return_sitk=False):
     elif args.operation == 'overview':
         generate_overview(args.i, args.ii, args.mask_in, args.o)
     elif args.operation == 'crop':

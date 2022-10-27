@@ -35,8 +35,8 @@
 
 //*********Components**********
 
-//(Registration "MultiResolutionRegistration")
-(Registration "MultiMetricMultiResolutionRegistration")
+(Registration "MultiResolutionRegistration")
+//(Registration "MultiMetricMultiResolutionRegistration")
 
 //***Interpolator
 //(Interpolator "BSplineInterpolator")
@@ -60,7 +60,8 @@
 (Transform "EulerTransform")
 (Sampler "RandomCoordinate")
 (Optimizer "AdaptiveStochasticGradientDescent")
-(Metric "AdvancedNormalizedCorrelation" "AdvancedMattesMutualInformation")
+//(Metric "AdvancedNormalizedCorrelation" "AdvancedMattesMutualInformation")
+(Metric "AdvancedMattesMutualInformation")
 
 //************Transform************
 
