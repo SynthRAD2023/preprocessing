@@ -10,7 +10,7 @@ Site='pelvis'
 initial='/nfs/arch11/researchData/PROJECT/CBCTreplan/SynthRAD/2023/Pelvis/'
 dirOut='/nfs/arch11/researchData/PROJECT/SynthRAD/2023/dataset_UMCU/Task'${Task}'/'${Site}'/'
 
-Flag_preproc=123 	# set the flag to 1234 to activate the download
+Flag_preproc=1234 	# set the flag to 1234 to activate the download
 Flag_overview=1234
 Flag_extract=1234
 Flag_remove=123   # this is for full debug
@@ -22,7 +22,7 @@ if [ $Flag_extract == '1234' ]; then
 fi
 ## these paths contain all the fixed provided tools
 ## not to be modified by the user
-preproc='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/pre_process_tools_umc.py'
+preproc='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/pre_process_tools.py'
 extract='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/extract_tags_tools_umc.py'
 
 tags_CBCT='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/param_files/tags_CBCT.txt'
@@ -93,8 +93,13 @@ Ciao
   python ${preproc} register --f ${TMP}ct_resampled.nii.gz --m ${TMP}cbct_or.nii.gz --o ${TMP}cbct_registered.nii.gz --p ${param_reg}
 
 #Mask CBCT
-  python ${preproc} segment --i ${TMP}cbct_registered.nii.gz --o ${TMP}mask_CBCT.nii.gz --r 12
+  echo -e "Masking CBCT"
+  python ${preproc} mask_cbct --i ${TMP}ct_resampled.nii.gz --mask_in ${TMP}cbct_or.nii.gz --p ${TMP}cbct_registered_parameters.txt --o ${TMP}mask_CBCT.nii.gz
+#        generate_mask_cbct_pelvis(args.i, args.mask_in, args.p, args.o)
+#        def generate_mask_cbct_pelvis(ct, cbct, trans_file, output_fn=None, return_sitk=False):
+#  python ${preproc} segment --i ${TMP}cbct_registered.nii.gz --o ${TMP}mask_CBCT.nii.gz --r 12
 
+  echo -e "Correcting FOV"
   python ${preproc} correct --i ${TMP}cbct_or.nii.gz --ii ${TMP}ct_resampled.nii.gz \
   --f ${TMP}cbct_registered_parameters.txt --mask_crop ${TMP}mask_CBCT.nii.gz --o ${TMP}mask_CBCT_corrected.nii.gz
 
@@ -140,11 +145,11 @@ done
 
 if [ $Flag_extract == '1234' ]; then
 
-python ${extract} toxlsx --csv ${dirOut}overview/CBCT_UMCU_${Site}.csv \
---xlsx ${dirOut}overview/CT_CBCT_UMCU_${Site}.xlsx --tags "CBCT"
+  python ${extract} toxlsx --csv ${dirOut}overview/CBCT_UMCU_${Site}.csv \
+  --xlsx ${dirOut}overview/CT_CBCT_UMCU_${Site}.xlsx --tags "CBCT"
 
-python ${extract} toxlsx --csv ${dirOut}overview/CT_UMCU_${Site}.csv \
---xlsx ${dirOut}overview/CT_CBCT_UMCU_${Site}.xlsx --tags "CT"
+  python ${extract} toxlsx --csv ${dirOut}overview/CT_UMCU_${Site}.csv \
+  --xlsx ${dirOut}overview/CT_CBCT_UMCU_${Site}.xlsx --tags "CT"
 
 fi
 #today=`date +%Y%m%d`
