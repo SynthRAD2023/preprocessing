@@ -135,9 +135,9 @@ def create_FOV_cbct(cbct,output_mask=None,return_sitk=False):
     cbct_mask=cbct_mask.astype(int)
 
     # limit first and last slices to smaller radii
-    for j in range(1,14):
-        cbct_mask[j]=create_circular_mask(dim[1],dim[2],(centerX,centerY),18+(j-1)*15)
-        cbct_mask[-j]=create_circular_mask(dim[1],dim[2],(centerX,centerY),18+(j-1)*15)
+    #for j in range(1,14):
+    #    cbct_mask[j]=create_circular_mask(dim[1],dim[2],(centerX,centerY),18+(j-1)*15)
+    #    cbct_mask[-j]=create_circular_mask(dim[1],dim[2],(centerX,centerY),18+(j-1)*15)
 
     mask_itk = sitk.GetImageFromArray(cbct_mask)
     mask_itk.CopyInformation(im)
@@ -147,6 +147,30 @@ def create_FOV_cbct(cbct,output_mask=None,return_sitk=False):
     if return_sitk:
         return imgFiltered
     sitk.WriteImage(imgFiltered,output_mask)
+
+def create_FOV_cbct_umcu(cbct,output_mask=None,return_sitk=False):
+    #load image
+    im = sitk.ReadImage(cbct)
+    cbct_np = sitk.GetArrayFromImage(im)
+    
+    #select cbct fov 
+    dim = np.shape(cbct_np)
+    cbct_mask=np.zeros((dim[0],dim[1],dim[2]),int)
+    cbct_mask[cbct_np>0]=1
+    cbct_mask=cbct_mask.astype(int)
+
+    #convert to sitk and fill holes
+    mask_itk = sitk.GetImageFromArray(cbct_mask)
+    mask_itk.CopyInformation(im)
+    castFilter = sitk.CastImageFilter()
+    castFilter.SetOutputPixelType(sitk.sitkInt16)
+    imgFiltered = castFilter.Execute(mask_itk)
+    filled_mask = sitk.BinaryMorphologicalClosing(imgFiltered, (20, 20, 20))
+    
+    if return_sitk:
+        return filled_mask 
+    else:
+        sitk.WriteImage(filled_mask,output_mask)
 
 def transform_mask(input_mask,ref_img,trans_file): 
     # function to transform a mask using the previously calculated (rigid) registration parameters
@@ -163,17 +187,20 @@ def generate_mask_cbct_pelvis(ct,cbct,trans_file,output_fn=None,return_sitk=Fals
     ct_im = sitk.ReadImage(ct)
     cbct_im = sitk.ReadImage(cbct)
     mask_ct = segment(ct,return_sitk=True)
-    cbct_fov = create_FOV_cbct(cbct,return_sitk=True)
+    cbct_fov = create_FOV_cbct_umcu(cbct,return_sitk=True)
     fov_reg = transform_mask(cbct_fov,ct_im,trans_file)
     mask_ct_np = sitk.GetArrayFromImage(mask_ct)
     cbct_fov_np = sitk.GetArrayFromImage(fov_reg)
     mask_cbct_np = mask_ct_np*cbct_fov_np
     mask_cbct = sitk.GetImageFromArray(mask_cbct_np)
-    mask_cbct.CopyInformation(mask_ct)
+    component_image = sitk.ConnectedComponent(mask_cbct)
+    sorted_component_image = sitk.RelabelComponent(component_image, sortByObjectSize=True)
+    largest_component = sorted_component_image == 1
+    largest_component.CopyInformation(mask_ct)
     if return_sitk:
-        return mask_cbct
+        return largest_component
     else:
-        sitk.WriteImage(mask_cbct,output_fn)
+        sitk.WriteImage(largest_component,output_fn)
 
 def correct_mask_mr(mr,ct,transform,mask,mask_corrected):
     # load inputs
