@@ -166,7 +166,11 @@ def create_FOV_cbct_umcu(cbct,output_mask=None,return_sitk=False):
     castFilter.SetOutputPixelType(sitk.sitkInt16)
     imgFiltered = castFilter.Execute(mask_itk)
     filled_mask = sitk.BinaryMorphologicalClosing(imgFiltered, (20, 20, 20))
-    dilated_mask = sitk.BinaryDilate(filled_mask, (15, 15, 0))
+
+    try:
+        dilated_mask = sitk.BinaryDilate(filled_mask, (15, 15, 0))
+    except:
+        dilated_mask = filled_mask
 
     if return_sitk:
         return dilated_mask
