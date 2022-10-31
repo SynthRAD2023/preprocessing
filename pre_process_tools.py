@@ -166,11 +166,12 @@ def create_FOV_cbct_umcu(cbct,output_mask=None,return_sitk=False):
     castFilter.SetOutputPixelType(sitk.sitkInt16)
     imgFiltered = castFilter.Execute(mask_itk)
     filled_mask = sitk.BinaryMorphologicalClosing(imgFiltered, (20, 20, 20))
-    
+    dilated_mask = sitk.BinaryDilate(filled_mask, (15, 15, 0))
+
     if return_sitk:
-        return filled_mask 
+        return dilated_mask
     else:
-        sitk.WriteImage(filled_mask,output_mask)
+        sitk.WriteImage(dilated_mask,output_mask)
 
 def transform_mask(input_mask,ref_img,trans_file): 
     # function to transform a mask using the previously calculated (rigid) registration parameters
