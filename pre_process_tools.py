@@ -100,7 +100,8 @@ def clean_border(input_image, output_image):
 def segment(input_image, output_mask=None, radius=(12, 12, 12),return_sitk=False):
     image = sitk.InvertIntensity(sitk.Cast(sitk.ReadImage(input_image),sitk.sitkFloat32))
     mask = sitk.OtsuThreshold(image)
-    component_image = sitk.ConnectedComponent(mask)
+    dil_mask = sitk.BinaryDilate(mask, (10, 10, 1))
+    component_image = sitk.ConnectedComponent(dil_mask)
     sorted_component_image = sitk.RelabelComponent(component_image, sortByObjectSize=True)
     largest_component_binary_image = sorted_component_image == 1
     mask_closed = sitk.BinaryMorphologicalClosing(largest_component_binary_image, (12, 12, 12))
