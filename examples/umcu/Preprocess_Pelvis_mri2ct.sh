@@ -11,9 +11,9 @@ initial='/nfs/arch11/researchData/PROJECT/MRonlyTP/Gen_sCT/data/'
 dirOut='/nfs/arch11/researchData/PROJECT/SynthRAD/2023/dataset_UMCU/Task1/'${Site}'/'
 
 Flag_preproc=123 	# set the flag to 1234 to activate the download
-Flag_extract=1234
-Flag_overview=1234
-Flag_remove=123   # this is for full debug
+Flag_extract=123
+Flag_overview=123
+Flag_remove=1234   # this is for full debug
 
 if [ $Flag_extract == '1234' ]; then
   rm ${dirOut}overview/MR_UMCU_${Site}.csv
@@ -60,7 +60,7 @@ do
 #  Dcm_CT=$(find ${initial}${patientAnon}/ct/dicom/ -type f -name ct*dcm | head -1)
 #  Dcm_MR=$(find ${initial}${patientAnon}/conebeam_ct/dicom/ -type f -name *dcm | head -1)
 
-  Hdf_CT=$(find ${dirCT}Hdf/ -type f -name MOD=CT*hdf | head -1)
+  Hdf_CT=$(find ${dirCT}Hdf/ -type f \( -iname "mod=ct*bek*" -o -iname "mod=ct*pelv*" -o -iname "mod=ct*bdo*" -o -iname "mod=ct*mar*" \) | head -1)
   echo -e "Hdf CT: " $Hdf_CT
 
 #(contains(SeqMR{ll},"IP3DTFE") | contains(SeqMR{ll},"IPW")) && ~contains(SeqMR{ll},"MRCAT") && ~contains(SeqMR{ll},"gd")
@@ -91,6 +91,7 @@ Ciao
   echo "Registering... "
   python ${preproc} register --f ${TMP}ct_resampled.nii.gz --m ${TMP}mr_clean.nii.gz --o ${TMP}mr_IP_registered.nii.gz --p ${param_reg}
 #Mask MR
+
   echo "Segmenting MR... "
   python ${preproc} segment --i ${TMP}mr_IP_registered.nii.gz --o ${TMP}mask_MR.nii.gz --r 12
   echo "Correcting FOV... "
@@ -112,14 +113,15 @@ Ciao
   #python ${preproc} crop --i ${TMP}ct_resampled.nii.gz --mask_crop ${TMP}mask_MR.nii.gz --o ${TMP}ct_cropped.nii.gz
   #python ${preproc} crop --i ${TMP}mr_IP_registered.nii.gz --mask_crop ${TMP}mask_MR.nii.gz --o ${TMP}mr_cropped.nii.gz
 
-  if [ $Flag_remove == '1234' ]; then
-  echo "Removing "
-  rm ${TMP}ct_o* ${TMP}ct_r* ${TMP}mr_I* ${TMP}mr_cl* ${TMP}mr_o* ${TMP}mask_MR* ${TMP}mask_CT*
-  fi
   fi
 
 <<'Comm'
 Comm
+
+  if [ $Flag_remove == '1234' ]; then
+  echo "Removing "
+  rm ${TMP}ct_o* ${TMP}ct_r* ${TMP}mr_I* ${TMP}mr_cl* ${TMP}mr_o* ${TMP}mask_MR* ${TMP}mask_CT*
+  fi
 
   if [ $Flag_overview == '1234' ]; then
 #Generate overview
