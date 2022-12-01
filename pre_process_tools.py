@@ -131,8 +131,8 @@ def create_FOV_cbct(cbct,output_mask=None,return_sitk=False):
 
     #create a mask of this FOV for each slice
     cbct_mask=np.zeros((dim[0],dim[1],dim[2]),int)
-    for i in range(dim[0]-1):
-        cbct_mask[i+1,:,:]=create_circular_mask(dim[1],dim[2],(centerX,centerY),radius)
+    for i in range(dim[0]-26):
+        cbct_mask[i+13,:,:]=create_circular_mask(dim[1],dim[2],(centerX,centerY),radius)
     cbct_mask=cbct_mask.astype(int)
 
     # limit first and last slices to smaller radii
@@ -148,6 +148,19 @@ def create_FOV_cbct(cbct,output_mask=None,return_sitk=False):
     if return_sitk:
         return imgFiltered
     sitk.WriteImage(imgFiltered,output_mask)
+
+def fix_fov_cbct_umcg(cbct_or,ct_ref,mask_cbct,trans,output_mask):
+    fov = create_FOV_cbct(cbct_or,return_sitk=True)
+    ct = sitk.ReadImage(ct_ref)
+    cbct_mask = sitk.ReadImage(mask_cbct)
+    fov_mask = transform_mask(fov,ct,trans)
+
+    cbct_mask_corrected = sitk.GetArrayFromImage(fov_mask)*sitk.GetArrayFromImage(cbct_mask)
+    cbct_mask_corrected = sitk.GetImageFromArray(cbct_mask_corrected)
+    cbct_mask_corrected.CopyInformation(cbct_mask)
+
+    sitk.WriteImage(cbct_mask_corrected,output_mask)
+
 
 def create_FOV_cbct_umcu(cbct,output_mask=None,return_sitk=False):
     #load image
