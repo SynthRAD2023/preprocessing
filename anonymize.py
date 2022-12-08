@@ -57,8 +57,8 @@ def detect_face(external_struct,eye_struct,output_path):
     face_mask.CopyInformation(ext_sitk)
     sitk.WriteImage(face_mask,output_path,True)
 
-def anonymize_mask(face_mask,mask,output):
-    # function that applies the face mask to the masks generated during pre-processing
+def remove_face(face_mask,mask,output,background=-1000):
+    # function that applies the face mask to the images/masks generated during pre-processing
     # can also be applied to cropped images/masks since it performs resampling
 
     # read inputs
@@ -72,10 +72,10 @@ def anonymize_mask(face_mask,mask,output):
     resample.SetDefaultPixelValue(0)
     face_resampled = resample.Execute(face)
 
-    # remove face from mask
+    # remove face from mask/image
     mask_np = sitk.GetArrayFromImage(mask)
     face_np = sitk.GetArrayFromImage(face_resampled)
-    mask_np[face_np==1]=0
+    mask_np[face_np==1]=background
     mask_anon = sitk.GetImageFromArray(mask_np)
     mask_anon.CopyInformation(face_resampled)
     sitk.WriteImage(mask_anon,output,True)
