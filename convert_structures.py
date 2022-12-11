@@ -71,3 +71,23 @@ def write_dict_to_csv(result_dict,header,output_file):
         w.writeheader()
         for k,d in sorted(result_dict.items()):
             w.writerow(mergedict({'patient': k},d))
+
+def count_occurence(header,results):
+    counts = {}
+    patients = list(results.keys())
+    for struct in header:
+        count = 0
+        for patient in patients:
+            if results[patient][struct]==1:
+                count = count + 1
+        counts[struct]=count
+    return counts
+
+def delete_keys(results,counts,threshold):
+    patients = list(results.keys())
+    structs = list(results[patients[0]].keys())
+    for struct in structs:
+        if counts[struct]<threshold:
+            for patient in patients:
+                del results[patient][struct]
+            header.remove(struct)
