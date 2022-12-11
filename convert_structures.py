@@ -1,10 +1,7 @@
 import SimpleITK as sitk
-import numpy as np
 import subprocess as sub
 import os
-import fnmatch
-import shutil
-from sys import platform
+import csv
 
 def struct_to_nrrd(struct_path, output_path):
     #convert dicom RTstruct into individual .nrrd files for each structure
@@ -36,3 +33,41 @@ def resample_structure(structure_path,ref_CT,output_path,ref_CT_is_sitk=False):
     print(f'Writing...')
     sitk.WriteImage(structure_resampled,output_path,True)
     print(f'Finished!')
+
+def list_structures(path_structures):
+    #return a sorted list of all strucutes in a directory, also removing the file ending.nrrd
+    structures = os.listdir(path_structures)
+    structures = [structure[:-5] for structure in structures]
+    structures.sort()
+    return structures
+
+def create_header(dataset_dict):
+    header = []
+    structures = []
+    for patient in dataset_dict:
+        structures.extend(dataset_dict[patient])
+    [header.append(x) for x in structures if header.count(x)==0]
+    return header
+
+def check_availability(header,dataset_dict):
+    results_dict = {}
+    for patient in dataset_dict:
+        print(patient)
+        patient_dict = {i:0 for i in header}
+        for i in header:
+            if dataset_dict[patient].count(i) == 1:
+                patient_dict[i]=1
+        results_dict[patient]=patient_dict
+    return results_dict
+
+def mergedict(a,b):
+    a.update(b)
+    return a
+
+def write_dict_to_csv(result_dict,header,output_file):
+    header.insert(0,'patient')
+    with open(output_file, "w",newline='') as f:
+        w = csv.DictWriter(f, header)
+        w.writeheader()
+        for k,d in sorted(result_dict.items()):
+            w.writerow(mergedict({'patient': k},d))
