@@ -91,4 +91,4 @@ def delete_keys(results,header,counts,threshold):
             for patient in patients:
                 del results[patient][struct]
             header.remove(struct)
-    return header
+    return header, results
