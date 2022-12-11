@@ -83,7 +83,7 @@ def count_occurence(header,results):
         counts[struct]=count
     return counts
 
-def delete_keys(results,counts,threshold):
+def delete_keys(results,header,counts,threshold):
     patients = list(results.keys())
     structs = list(results[patients[0]].keys())
     for struct in structs:
@@ -91,3 +91,4 @@ def delete_keys(results,counts,threshold):
             for patient in patients:
                 del results[patient][struct]
             header.remove(struct)
+    return header
