@@ -57,6 +57,43 @@ def detect_face(external_struct,eye_struct,output_path):
     face_mask.CopyInformation(ext_sitk)
     sitk.WriteImage(face_mask,output_path,True)
 
+def detect_face_umcu(eye_struct,output_path):
+    # read inputs
+    eye_sitk = sitk.ReadImage(eye_struct)
+    eye = sitk.GetArrayFromImage(eye_sitk)
+
+    print('Create eye bounding box...')
+    # create bounding box for eye
+    rows = np.any(eye, axis=1)
+    cols = np.any(eye, axis=0)
+    rmin, rmax = np.where(rows)[0][[0, -1]]
+    cmin, cmax = np.where(cols)[0][[0, -1]]
+
+    # find center of boudning box
+    y_eye = rmax - np.round((rmax-rmin)/2)
+    x_eye = cmax - np.round((cmax-cmin)/2)
+
+    print('Create face mask...')
+    # create mask for face
+    
+    margin = 5
+
+    dim_ext = np.shape(eye)
+    face = np.zeros_like(eye)
+    for l in range(dim_ext[2]):
+        for i in range(dim_ext[1]):
+            for j in range(dim_ext[0]):
+                if i < x_eye+margin:
+                    face[j,i,l] = 1
+
+    face[int(y_eye)+10:,:,:]=0
+
+    print('Save mask...')
+    face_mask = sitk.GetImageFromArray(face)
+    face_mask.CopyInformation(eye_sitk)
+    sitk.WriteImage(face_mask,output_path,True)
+
+
 def remove_face(face_mask,mask,output,background=-1000):
     # function that applies the face mask to the images/masks generated during pre-processing
     # can also be applied to cropped images/masks since it performs resampling
