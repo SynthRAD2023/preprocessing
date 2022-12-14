@@ -376,7 +376,7 @@ def generate_overview(input_path,ref_path,mask_path,output_path,title=''):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Define fixed, moving and output filenames')
     parser.add_argument('operation', help='select operation to perform (register, convert, segment, mask_mr, mask_ct,'+\
-    ' resample, correct,overview, clean)')
+    ' resample, correct,overview, clean, fix)')
     parser.add_argument('--f', help='fixed file path')
     parser.add_argument('--m', help='moving file path')
     parser.add_argument('--i', help='input file path (folder containing dicom series) for registration or resampling')
@@ -417,6 +417,8 @@ if __name__ == "__main__":
         mask_ct(args.i, args.mask_in, args.o)
     elif args.operation == 'mask_cbct':
         generate_mask_cbct_pelvis(args.i, args.mask_in, args.p, args.o)
+    elif args.operation == 'fix':
+        fix_fov_cbct_umcg(args.i, args.ii, args.mask_in, args.p, args.o)
     elif args.operation == 'overview':
         generate_overview(args.i, args.ii, args.mask_in, args.o)
     elif args.operation == 'crop':
