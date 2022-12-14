@@ -70,7 +70,7 @@ def detect_face_umcu(eye_struct,output_path):
     rmin, rmax = np.where(rows)[0][[0, -1]]
     cmin, cmax = np.where(cols)[0][[0, -1]]
 
-    # find center of boudning box
+    # find center of bounding box
     y_eye = rmax - np.round((rmax-rmin)/2)
     x_eye = cmax - np.round((cmax-cmin)/2)
 
