@@ -119,15 +119,17 @@ def remove_face(face_mask,mask,output,background=-1000):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Define fixed, moving and output filenames')
-    parser.add_argument('operation', help='select operation to perform (detect, remove, remove_cbct )')
+    parser.add_argument('operation', help='select operation to perform (detect, detect_umc remove, remove_cbct )')
     parser.add_argument('--i', help='input file path (folder containing dicom series) for registration or resampling')
     parser.add_argument('--o', help='output file path')
     parser.add_argument('--mask', help='output mask path')
     parser.add_argument('--ref', help='ref image file path')
     args = parser.parse_args()
 
-    if args.operation == 'detect':
-        detect_face_umcu(args.ref, args.i, args.o)
+    if args.operation == 'detect_umc':
+        detect_face_umcu(args.i, args.o)
+    elif args.operation == 'detect':
+        detect_face(args.ref, args.i, args.o)
     elif args.operation == 'remove':
         remove_face(args.mask,args.ref,args.o,background=-1000)
     elif args.operation == 'remove_cbct':
