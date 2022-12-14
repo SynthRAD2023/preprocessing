@@ -1,3 +1,4 @@
+import argparse
 import SimpleITK as sitk
 import subprocess as sub
 import os
@@ -7,6 +8,8 @@ def struct_to_nrrd(struct_path, output_path):
     #convert dicom RTstruct into individual .nrrd files for each structure
     #requires Plastimatch (www.plastimatch.org)
     sub.run(['plastimatch','convert','--input',struct_path,'--output-prefix',output_path,'--prefix-format','nrrd'],shell=True)
+    # From Linux, typically best to put the whole PATH
+    sub.run(['/usr/bin/plastimatch','convert','--input',struct_path,'--output-prefix',output_path,'--prefix-format','nrrd'],shell=True)
 
 def nii_to_nrrd(input_path,output_path):
     #convert pCT from .nii.gz to .nrrd and remove all meta data so it can be used with matRad
@@ -14,7 +17,6 @@ def nii_to_nrrd(input_path,output_path):
     for k in im.GetMetaDataKeys():
         im.EraseMetaData(k)
     sitk.WriteImage(im,output_path,True)
-
 
 def resample_structure(structure_path,ref_CT,output_path,ref_CT_is_sitk=False):
     #resample a structure (.nrrd) onto same grid as the pCT, 
@@ -92,3 +94,26 @@ def delete_keys(results,header,counts,threshold):
                 del results[patient][struct]
             header.remove(struct)
     return header, results
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Define fixed, moving and output filenames')
+    parser.add_argument('operation', help='select operation to perform (str2nrrd, nii2nrrd, resample )')
+    parser.add_argument('--i', help='input file path (folder containing dicom series) for registration or resampling')
+    parser.add_argument('--o', help='output file path')
+    parser.add_argument('--ref', help='ref image file path')
+    args = parser.parse_args()
+
+    if args.operation == 'str2nrrd':
+        if args.i is not None:
+            struct_to_nrrd(args.i, args.o)
+        # do something
+        else:
+            # do something else
+            print('Please load a valid file path!')
+            # register(args.f, args.m, create_parameter_map(), args.o)
+    elif args.operation == 'nii2nrrd':
+        nii_to_nrrd(args.i, args.o)
+    elif args.operation == 'resample':
+        resample_structure(args.i, args.ref, args.o, ref_CT_is_sitk=False)
+    else:
+        print('check help for usage instructions')

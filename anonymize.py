@@ -1,3 +1,4 @@
+import argparse
 import numpy as np
 import SimpleITK as sitk
 from scipy.signal import find_peaks
@@ -93,7 +94,6 @@ def detect_face_umcu(eye_struct,output_path):
     face_mask.CopyInformation(eye_sitk)
     sitk.WriteImage(face_mask,output_path,True)
 
-
 def remove_face(face_mask,mask,output,background=-1000):
     # function that applies the face mask to the images/masks generated during pre-processing
     # can also be applied to cropped images/masks since it performs resampling
@@ -116,3 +116,21 @@ def remove_face(face_mask,mask,output,background=-1000):
     mask_anon = sitk.GetImageFromArray(mask_np)
     mask_anon.CopyInformation(face_resampled)
     sitk.WriteImage(mask_anon,output,True)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Define fixed, moving and output filenames')
+    parser.add_argument('operation', help='select operation to perform (detect, remove, remove_cbct )')
+    parser.add_argument('--i', help='input file path (folder containing dicom series) for registration or resampling')
+    parser.add_argument('--o', help='output file path')
+    parser.add_argument('--mask', help='output mask path')
+    parser.add_argument('--ref', help='ref image file path')
+    args = parser.parse_args()
+
+    if args.operation == 'detect':
+        detect_face_umcu(args.ref, args.i, args.o)
+    elif args.operation == 'remove':
+        remove_face(args.mask,args.ref,args.o,background=-1000)
+    elif args.operation == 'remove_cbct':
+        remove_face(args.mask,args.ref,args.o,background=0)
+    else:
+        print('check help for usage instructions')
