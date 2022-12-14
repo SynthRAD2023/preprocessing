@@ -182,7 +182,7 @@ def create_FOV_cbct_umcu(cbct,output_mask=None,return_sitk=False):
     filled_mask = sitk.BinaryMorphologicalClosing(imgFiltered, (20, 20, 20))
 
     try:
-        dilated_mask = sitk.BinaryDilate(filled_mask, (15, 15, 0))
+        dilated_mask = sitk.BinaryDilate(filled_mask, (-1, -1, 0))
     except:
         dilated_mask = filled_mask
 
@@ -376,7 +376,7 @@ def generate_overview(input_path,ref_path,mask_path,output_path,title=''):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Define fixed, moving and output filenames')
     parser.add_argument('operation', help='select operation to perform (register, convert, segment, mask_mr, mask_ct,'+\
-    ' resample, correct,overview, clean, fix)')
+    ' resample, correct,overview, clean, fix, mask_umcg)')
     parser.add_argument('--f', help='fixed file path')
     parser.add_argument('--m', help='moving file path')
     parser.add_argument('--i', help='input file path (folder containing dicom series) for registration or resampling')
@@ -415,6 +415,8 @@ if __name__ == "__main__":
     elif args.operation == 'mask_ct':
         #        print('arg mask_value= '+ args.mask_value)
         mask_ct(args.i, args.mask_in, args.o)
+    elif args.operation == 'mask_umcg':
+        create_FOV_cbct(args.i, args.o, True)
     elif args.operation == 'mask_cbct':
         generate_mask_cbct_pelvis(args.i, args.mask_in, args.p, args.o)
     elif args.operation == 'fix':
