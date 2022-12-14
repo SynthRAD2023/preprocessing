@@ -10,7 +10,7 @@ Site='brain'
 initial='/nfs/arch11/researchData/PROJECT/CBCTreplan/SynthRAD/2023/Brain/'
 dirOut='/nfs/arch11/researchData/PROJECT/SynthRAD/2023/dataset_UMCU/Task'${Task}'/'${Site}'/'
 
-Flag_preproc=123 	# set the flag to 1234 to activate the download
+Flag_preproc=1234 	# set the flag to 1234 to activate the download
 Flag_overview=1234
 Flag_extract=1234
 Flag_remove=1234   # this is for full debug

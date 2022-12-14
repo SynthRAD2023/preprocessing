@@ -11,9 +11,9 @@ initial='/nfs/arch11/researchData/PROJECT/MRonlyTP/Gen_sCT/data/'
 dirOut='/nfs/arch11/researchData/PROJECT/SynthRAD/2023/dataset_UMCU/Task'${Task}'/'${Site}'/'
 
 Flag_preproc=1234 	# set the flag to 1234 to activate the download
-Flag_extract=123
+Flag_extract=1234
 Flag_overview=1234
-Flag_remove=123   # this is for full debug
+Flag_remove=1234   # this is for full debug
 
 if [ $Flag_extract == '1234' ]; then
   rm ${dirOut}overview/MR_UMCU_${Site}.csv
@@ -72,8 +72,6 @@ do
 
   if [ $Flag_preproc == '1234' ]; then
 <<'Ciao'
-Ciao
-<<'Ciao'
 
   hdf2gipl.jar --infile $Hdf_CT --outfile ${TMP}ct_or.gipl
   ConvertSitk --infile ${TMP}ct_or.gipl --outfile ${TMP}ct_or.nii.gz
@@ -94,10 +92,10 @@ Ciao
   --f ${TMP}mr_T1_registered_parameters.txt --mask_crop ${TMP}mask_MR.nii.gz --o ${TMP}mask_MR_corrected.nii.gz
 
 #Mask MRI and resampled to cropped CT and MRI to mask_MR
-  python ${preproc} crop --i ${TMP}ct_resampled.nii.gz --mask_crop ${TMP}mask_MR_corrected.nii.gz --o ${TMP}CT_cropped.nii.gz #--mask_value -1000
+  python ${preproc} crop --i ${TMP}ct_resampled.nii.gz --mask_crop ${TMP}mask_MR_corrected.nii.gz --o ${TMP}ct_crop.nii.gz #--mask_value -1000
 
-  python ${preproc} crop --i ${TMP}mr_T1_registered.nii.gz --mask_crop ${TMP}mask_MR_corrected.nii.gz --o ${TMP}MR_cropped.nii.gz #--mask_value 0
-  python ${preproc} crop --i ${TMP}mask_MR.nii.gz --mask_crop ${TMP}mask_MR_corrected.nii.gz --o ${TMP}mask_cropped.nii.gz #--mask_value 0
+  python ${preproc} crop --i ${TMP}mr_T1_registered.nii.gz --mask_crop ${TMP}mask_MR_corrected.nii.gz --o ${TMP}mr_crop.nii.gz #--mask_value 0
+  python ${preproc} crop --i ${TMP}mask_MR.nii.gz --mask_crop ${TMP}mask_MR_corrected.nii.gz --o ${TMP}mask_crop.nii.gz #--mask_value 0
 
 #Mask CT, not used
   python ${preproc} segment --i ${TMP}CT_cropped.nii.gz --o ${TMP}mask_CT.nii.gz
@@ -105,19 +103,14 @@ Ciao
 #Crop to dilated mask_MR
   #python ${preproc} crop --i ${TMP}ct_resampled.nii.gz --mask_crop ${TMP}mask_MR.nii.gz --o ${TMP}ct_cropped.nii.gz
   #python ${preproc} crop --i ${TMP}mr_T1_registered.nii.gz --mask_crop ${TMP}mask_MR.nii.gz --o ${TMP}mr_cropped.nii.gz
-
-
 Ciao
-    if [ $Flag_remove == '1234' ]; then
-      echo "Removing "
-      rm ${TMP}ct* ${TMP}mr* ${TMP}mask_MR* ${TMP}mask_CT*
-      mv ${TMP}mask_cropped.nii.gz ${TMP}mask_crop.nii.gz
-      mv ${TMP}CT_cropped.nii.gz ${TMP}ct_crop.nii.gz
-      mv ${TMP}MR_cropped.nii.gz ${TMP}mr_crop.nii.gz
-    fi
-
   python ${preproc} mask_ct --i ${TMP}ct_crop.nii.gz --mask_in ${TMP}mask_crop.nii.gz --o ${TMP}ct_crop.nii.gz
 
+  fi
+
+ if [ $Flag_remove == '1234' ]; then
+    echo "Removing "
+    rm ${TMP}ct_o* ${TMP}ct_r* ${TMP}mr_T* ${TMP}mr_cl* ${TMP}mr_o* ${TMP}mask_MR* ${TMP}mask_CT*
   fi
 
   if [ $Flag_overview == '1234' ]; then
