@@ -112,6 +112,21 @@ def segment(input_image, output_mask=None, radius=(12, 12, 12),return_sitk=False
     else:
         sitk.WriteImage(filled_mask, output_mask)
 
+def segment_small(input_image, output_mask=None, radius=(12, 12, 12),return_sitk=False):
+    image = sitk.InvertIntensity(sitk.Cast(sitk.ReadImage(input_image),sitk.sitkFloat32))
+    mask = sitk.OtsuThreshold(image)
+    dil_mask = sitk.BinaryDilate(mask, (10, 10, 1))
+    component_image = sitk.ConnectedComponent(dil_mask)
+    sorted_component_image = sitk.RelabelComponent(component_image, sortByObjectSize=True)
+    largest_component_binary_image = sorted_component_image == 1
+    mask_closed = sitk.BinaryMorphologicalClosing(largest_component_binary_image, (5, 5, 5))
+    dilated_mask = sitk.BinaryDilate(mask_closed, (10, 10, 0))
+    filled_mask = sitk.BinaryFillhole(dilated_mask)
+    if return_sitk:
+        return filled_mask
+    else:
+        sitk.WriteImage(filled_mask, output_mask)
+
 def create_FOV_cbct(cbct,output_mask=None,return_sitk=False):
     
     def create_circular_mask(h, w, center, radius):
@@ -161,6 +176,27 @@ def fix_fov_cbct_umcg(cbct_or,ct_ref,mask_cbct,trans,output_mask):
 
     sitk.WriteImage(cbct_mask_corrected,output_mask)
 
+def fix_fov_cbct_umcu(cbct_or,ct_ref,mask_cbct,trans,output_mask):
+    fov = create_FOV_cbct_umcu(cbct_or,return_sitk=True)
+    ct = sitk.ReadImage(ct_ref)
+    cbct_mask = sitk.ReadImage(mask_cbct)
+    fov_mask = transform_mask(fov,ct,trans)
+
+    cbct_mask_corrected = sitk.GetArrayFromImage(fov_mask)*sitk.GetArrayFromImage(cbct_mask)
+    cbct_mask_corrected = sitk.GetImageFromArray(cbct_mask_corrected)
+    cbct_mask_corrected.CopyInformation(cbct_mask)
+
+    sitk.WriteImage(cbct_mask_corrected,output_mask)
+
+def fix_fov_mri_umcu(ct_ref,mask_cbct,output_mask):
+    mask_ct = segment_small(ct_ref,return_sitk=True)
+    cbct_mask = sitk.ReadImage(mask_cbct)
+
+    cbct_mask_corrected = sitk.GetArrayFromImage(mask_ct)*sitk.GetArrayFromImage(cbct_mask)
+    cbct_mask_corrected = sitk.GetImageFromArray(cbct_mask_corrected)
+    cbct_mask_corrected.CopyInformation(cbct_mask)
+
+    sitk.WriteImage(cbct_mask_corrected,output_mask)
 
 def create_FOV_cbct_umcu(cbct,output_mask=None,return_sitk=False):
     #load image
@@ -191,6 +227,36 @@ def create_FOV_cbct_umcu(cbct,output_mask=None,return_sitk=False):
     else:
         sitk.WriteImage(dilated_mask,output_mask)
 
+
+def create_FOV_cbct_umcu_pelvis(cbct, output_mask=None, return_sitk=False):
+    # load image
+    im = sitk.ReadImage(cbct)
+    cbct_np = sitk.GetArrayFromImage(im)
+
+    # select cbct fov
+    dim = np.shape(cbct_np)
+    cbct_mask = np.zeros((dim[0], dim[1], dim[2]), int)
+    cbct_mask[cbct_np > 0] = 1
+    cbct_mask = cbct_mask.astype(int)
+
+    # convert to sitk and fill holes
+    mask_itk = sitk.GetImageFromArray(cbct_mask)
+    mask_itk.CopyInformation(im)
+    castFilter = sitk.CastImageFilter()
+    castFilter.SetOutputPixelType(sitk.sitkInt16)
+    imgFiltered = castFilter.Execute(mask_itk)
+    filled_mask = sitk.BinaryMorphologicalClosing(imgFiltered, (20, 20, 20))
+
+    try:
+        dilated_mask = sitk.BinaryDilate(filled_mask, (15, 15, 0))
+    except:
+        dilated_mask = filled_mask
+
+    if return_sitk:
+        return dilated_mask
+    else:
+        sitk.WriteImage(dilated_mask, output_mask)
+
 def transform_mask(input_mask,ref_img,trans_file): 
     # function to transform a mask using the previously calculated (rigid) registration parameters
     # this function uses images as inputs not filepaths, so reading the files has to be performed outside 
@@ -200,6 +266,26 @@ def transform_mask(input_mask,ref_img,trans_file):
     interpolator=sitk.sitkNearestNeighbor
     mask_reg = sitk.Resample(input_mask,ref_img,tf,interpolator,default_value)
     return mask_reg
+
+def generate_mask_cbct(ct,cbct,trans_file,output_fn=None,return_sitk=False):
+    limit_pixel_values(ct,ct)
+    ct_im = sitk.ReadImage(ct)
+    cbct_im = sitk.ReadImage(cbct)
+    mask_ct = segment(ct,return_sitk=True)
+    cbct_fov = create_FOV_cbct_umcu(cbct,return_sitk=True)
+    fov_reg = transform_mask(cbct_fov,ct_im,trans_file)
+    mask_ct_np = sitk.GetArrayFromImage(mask_ct)
+    cbct_fov_np = sitk.GetArrayFromImage(fov_reg)
+    mask_cbct_np = mask_ct_np*cbct_fov_np
+    mask_cbct = sitk.GetImageFromArray(mask_cbct_np)
+    component_image = sitk.ConnectedComponent(mask_cbct)
+    sorted_component_image = sitk.RelabelComponent(component_image, sortByObjectSize=True)
+    largest_component = sorted_component_image == 1
+    largest_component.CopyInformation(mask_ct)
+    if return_sitk:
+        return largest_component
+    else:
+        sitk.WriteImage(largest_component,output_fn)
 
 def generate_mask_cbct_pelvis(ct,cbct,trans_file,output_fn=None,return_sitk=False):
     limit_pixel_values(ct,ct)
@@ -227,7 +313,8 @@ def correct_mask_mr(mr,ct,transform,mask,mask_corrected):
     ct_im = sitk.ReadImage(ct)
     tf = sitk.ReadTransform(transform)
     mask_im = sitk.ReadImage(mask)
-    
+    mask_ct = segment(ct, return_sitk=True)
+
     # create mask of original MR FOV
     mr_im_np = sitk.GetArrayFromImage(mr_im)
     mr_im_np[mr_im_np>=-2000]=1
@@ -240,7 +327,8 @@ def correct_mask_mr(mr,ct,transform,mask,mask_corrected):
     # correct MR mask with fov_reg box
     fov_np = sitk.GetArrayFromImage(fov_reg)
     mask_np = sitk.GetArrayFromImage(mask_im)
-    mask_corrected_np=mask_np*fov_np
+    mask_ct_np = sitk.GetArrayFromImage(mask_im)
+    mask_corrected_np=mask_np*fov_np*mask_ct_np
 
     #save corrected mask
     mask_corrected_im = sitk.GetImageFromArray(mask_corrected_np)
@@ -418,9 +506,15 @@ if __name__ == "__main__":
     elif args.operation == 'mask_umcg':
         create_FOV_cbct(args.i, args.o, True)
     elif args.operation == 'mask_cbct':
+        generate_mask_cbct(args.i, args.mask_in, args.p, args.o)
+    elif args.operation == 'mask_cbct_pelvis':
         generate_mask_cbct_pelvis(args.i, args.mask_in, args.p, args.o)
-    elif args.operation == 'fix':
+    elif args.operation == 'fix_umcg':
         fix_fov_cbct_umcg(args.i, args.ii, args.mask_in, args.p, args.o)
+    elif args.operation == 'fix_umcu':
+        fix_fov_cbct_umcu(args.i, args.ii, args.mask_in, args.p, args.o)
+    elif args.operation == 'fix_umcu_mri':
+        fix_fov_mri_umcu(args.i, args.mask_in, args.o)
     elif args.operation == 'overview':
         generate_overview(args.i, args.ii, args.mask_in, args.o)
     elif args.operation == 'crop':
