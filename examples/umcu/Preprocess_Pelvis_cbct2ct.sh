@@ -10,7 +10,7 @@ Site='pelvis'
 initial='/nfs/arch11/researchData/PROJECT/CBCTreplan/SynthRAD/2023/Pelvis/'
 dirOut='/nfs/arch11/researchData/PROJECT/SynthRAD/2023/dataset_UMCU/Task'${Task}'/'${Site}'/'
 
-Flag_preproc=1234 	# set the flag to 1234 to activate the download
+Flag_preproc=123 	# set the flag to 1234 to activate the download
 Flag_overview=1234
 Flag_extract=1234
 Flag_remove=123   # this is for full debug
@@ -78,6 +78,7 @@ do
   if [ $Flag_preproc == '1234' ]; then
 <<'Ciao'
 Ciao
+
   gipl2hdf.jar --infile $Gipl_CT --outfile $Hdf_CT
   cp $Gipl_CT ${TMP}ct_or.gipl
   ConvertSitk --infile $Gipl_CT --outfile ${TMP}ct_or.nii.gz
@@ -88,7 +89,6 @@ Ciao
 # From here Adrian steps
 # Resample CT to 1x1x1
   python ${preproc} resample --i ${TMP}ct_or.nii.gz --o ${TMP}ct_resampled.nii.gz --s 1 1 2.5
-
 #Register CBCTI to CT according to the parameter file specified
   python ${preproc} register --f ${TMP}ct_resampled.nii.gz --m ${TMP}cbct_or.nii.gz --o ${TMP}cbct_registered.nii.gz --p ${param_reg}
 
