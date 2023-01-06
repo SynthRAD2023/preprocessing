@@ -15,7 +15,6 @@ def nii_to_nrrd(input_path,output_path):
         im.EraseMetaData(k)
     sitk.WriteImage(im,output_path,True)
 
-
 def resample_structure(structure_path,ref_CT,output_path,ref_CT_is_sitk=False):
     #resample a structure (.nrrd) onto same grid as the pCT, 
     #ref_CT can be path to an image (e.g. nrrd) or already loaded as a sitk image (ref_CT_is_sitk=True)
@@ -33,6 +32,22 @@ def resample_structure(structure_path,ref_CT,output_path,ref_CT_is_sitk=False):
     print(f'Writing...')
     sitk.WriteImage(structure_resampled,output_path,True)
     print(f'Finished!')
+
+def crop_structure(struct_fn,mask_fn,output_fn):
+    #crop structure so it alligns withs the cropped images generated during pre-processing
+    #using the cropped mask (mask_fn) as reference for cropping
+    struct = sitk.ReadImage(struct_fn)
+    mask = sitk.ReadImage(mask_fn)
+
+    crop_struct = sitk.ResampleImageFilter()
+    crop_struct.SetReferenceImage(mask)
+    crop_struct.SetInterpolator(sitk.sitkNearestNeighbor)
+
+    struct_cropped = crop_struct.Execute(struct)
+    write_struct = sitk.ImageFileWriter()
+    write_struct.UseCompressionOn()
+    write_struct.SetFileName(output_fn)
+    write_struct.Execute(struct_cropped)
 
 def list_structures(path_structures):
     #return a sorted list of all strucutes in a directory, also removing the file ending.nrrd
