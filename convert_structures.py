@@ -113,7 +113,7 @@ def delete_keys(results,header,counts,threshold):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Define fixed, moving and output filenames')
-    parser.add_argument('operation', help='select operation to perform (str2nrrd, nii2nrrd, resample )')
+    parser.add_argument('operation', help='select operation to perform (str2nrrd, nii2nrrd, resample, crop)')
     parser.add_argument('--i', help='input file path (folder containing dicom series) for registration or resampling')
     parser.add_argument('--o', help='output file path')
     parser.add_argument('--ref', help='ref image file path')
@@ -131,5 +131,7 @@ if __name__ == "__main__":
         nii_to_nrrd(args.i, args.o)
     elif args.operation == 'resample':
         resample_structure(args.i, args.ref, args.o, ref_CT_is_sitk=False)
+    elif args.operation == 'crop':
+        crop_structure(args.i, args.ref, args.o)
     else:
         print('check help for usage instructions')
