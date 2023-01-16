@@ -11,9 +11,11 @@ initial='/nfs/arch11/researchData/PROJECT/CBCTreplan/SynthRAD/2023/Pelvis/'
 dirOut='/nfs/arch11/researchData/PROJECT/SynthRAD/2023/dataset_UMCU/Task'${Task}'/'${Site}'/'
 
 Flag_preproc=123 	# set the flag to 1234 to activate the download
+Flag_rtstruc=1234
 Flag_overview=1234
-Flag_extract=1234
+Flag_extract=123
 Flag_remove=123   # this is for full debug
+Flag_get_IDS=123
 
 if [ $Flag_extract == '1234' ]; then
   rm ${dirOut}overview/CBCT_UMCU_${Site}.csv
@@ -24,6 +26,7 @@ fi
 ## not to be modified by the user
 preproc='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/pre_process_tools.py'
 extract='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/extract_tags_tools_umc.py'
+convert_rtss='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/convert_structures.py'
 
 tags_CBCT='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/param_files/tags_CBCT.txt'
 tags_CT='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/param_files/tags_CT.txt'
@@ -42,7 +45,7 @@ readarray -t patients < ./pat_list_${Site}_cbct2ct.txt
 for patIndex in $(eval echo {0..$((${#patients[@]}-1))})
 do
 	patient=`echo ${patients[patIndex]} | awk '{print $1}'`
-#  patientid=`echo ${patients[patIndex]} | awk '{print $2}'`
+  patientid=`echo ${patients[patIndex]} | awk '{print $2}'`
   dateCT=`echo ${patients[patIndex]} | awk '{print $4}'`
   dateCBCT=`echo ${patients[patIndex]} | awk '{print $3}'`
   phase=`echo ${patients[patIndex]} | awk '{print $5}'`
@@ -60,6 +63,7 @@ do
 
   Dcm_CT=$(find ${initial}${patient}/CT/ -maxdepth 2 -type d -name "*Dcm*" -print | head -1)
   Dcm_CBCT=$(find ${initial}${patient}/CBCT/ -maxdepth 2 -type d -name "*Dcm*" -print | head -1)
+  Dcm_RTset=$(find ${initial}${patient}/RTset/ -maxdepth 2 -type d -name "*Dcm*" -print | head -1)
 
   find ${initial}${patient}/CT/ -maxdepth 2 -type d -name "*Dcm*"
 
@@ -74,6 +78,7 @@ do
 
   echo -e "Dcm CBCT: " $Dcm_CBCT
   echo -e "Dcm CT: " $Dcm_CT
+  echo -e "Dcm RTset: " $Dcm_RTset
 
   if [ $Flag_preproc == '1234' ]; then
 <<'Ciao'
@@ -94,18 +99,26 @@ Ciao
 
 #Mask CBCT
   echo -e "Masking CBCT"
+#  python ${preproc} mask_cbct --i ${TMP}ct_resampled.nii.gz --mask_in ${TMP}cbct_or.nii.gz --p ${TMP}cbct_registered_parameters.txt --o ${TMP}mask_CBCT.nii.gz
+  python ${preproc} segment --i ${TMP}cbct_registered.nii.gz --o ${TMP}mask_CBCT.nii.gz --r 12
   python ${preproc} mask_cbct --i ${TMP}ct_resampled.nii.gz --mask_in ${TMP}cbct_or.nii.gz --p ${TMP}cbct_registered_parameters.txt --o ${TMP}mask_CBCT.nii.gz
+  python ${preproc} correct --i ${TMP}cbct_or.nii.gz --ii ${TMP}ct_resampled.nii.gz \
+  --f ${TMP}cbct_registered_parameters.txt --mask_crop ${TMP}mask_CBCT.nii.gz --o ${TMP}mask_CBCT_corrected.nii.gz
+#def fix_fov_cbct_umcg(cbct_or,ct_ref,mask_cbct,trans,output_mask):
+#fix_fov_cbct_umcg(args.i, args.ii, args.mask_in, args.p, args.o)
+
 #        generate_mask_cbct_pelvis(args.i, args.mask_in, args.p, args.o)
 #        def generate_mask_cbct_pelvis(ct, cbct, trans_file, output_fn=None, return_sitk=False):
 #  python ${preproc} segment --i ${TMP}cbct_registered.nii.gz --o ${TMP}mask_CBCT.nii.gz --r 12
 
-  echo -e "Correcting FOV"
-  python ${preproc} correct --i ${TMP}cbct_or.nii.gz --ii ${TMP}ct_resampled.nii.gz \
-  --f ${TMP}cbct_registered_parameters.txt --mask_crop ${TMP}mask_CBCT.nii.gz --o ${TMP}mask_CBCT_corrected.nii.gz
+#  echo -e "Correcting FOV"
+#  python ${preproc} fix_umcu --i ${TMP}cbct_or.nii.gz --ii ${TMP}ct_resampled.nii.gz \
+#  --mask_in ${TMP}mask_CBCT.nii.gz --p ${TMP}cbct_registered_parameters.txt --o ${TMP}mask_CBCT_corrected.nii.gz
+#  python ${preproc} correct --i ${TMP}cbct_or.nii.gz --ii ${TMP}ct_resampled.nii.gz \
+#  --f ${TMP}cbct_registered_parameters.txt --mask_crop ${TMP}mask_CBCT.nii.gz --o ${TMP}mask_CBCT_corrected.nii.gz
 
 #Mask CBCTI and resampled to cropped CT and CBCTI to mask_CBCT
   python ${preproc} crop --i ${TMP}ct_resampled.nii.gz --mask_crop ${TMP}mask_CBCT_corrected.nii.gz --o ${TMP}ct_crop.nii.gz #--mask_value -1000
-
   python ${preproc} crop --i ${TMP}cbct_registered.nii.gz --mask_crop ${TMP}mask_CBCT_corrected.nii.gz --o ${TMP}cbct_crop.nii.gz #--mask_value 0
   python ${preproc} crop --i ${TMP}mask_CBCT.nii.gz --mask_crop ${TMP}mask_CBCT_corrected.nii.gz --o ${TMP}mask_crop.nii.gz #--mask_value 0
 
@@ -119,6 +132,34 @@ Ciao
 Ciao
   fi
 
+ if [ $Flag_rtstruc == '1234' ]; then
+    echo -e "Preparing RTStruct"
+    Dcm_RTstruct=$(find ${Dcm_RTset} -type f -name rts*dcm | head -1)
+    echo $Dcm_RTstruct
+    if [ -z "$Dcm_RTstruct" ]; then
+      dicomgetcli.jar -autoanonymize -patientid $patientid -database dicom_rtstruct -dirs ${dirCT}Dcm/ -tags "Modality" -tagvalues "RTST" -tagvaluecomparators containsIgnoreCase  > /dev/null
+    fi
+    Dcm_RTstruct=$(find ${Dcm_RTset} -type f -name rts*dcm | head -1)
+    echo -e "Dcm RTSTRUCT: " $Dcm_RTstruct
+    mkdir -p ${TMP}rtss
+    mkdir -p ${TMP}rtss/or
+    alias plastimatch='/usr/bin/plastimatch'
+
+##   python ${convert_rtss} str2nrrd --i ${Dcm_RTstruct} --o ${TMP}rtss/or
+    /usr/bin/plastimatch convert --input ${Dcm_RTstruct} --output-prefix ${TMP}rtss/or --prefix-format nrrd --output-ss-list ${TMP}rtss/or/List.txt
+    python ${convert_rtss} nii2nrrd --i ${TMP}ct_crop.nii.gz --o ${TMP}rtss/ct_crop.nrrd
+    rm ${TMP}rtss/or/*_sq.nrrd
+    cp ${TMP}rtss/or/List.txt ${TMP}rtss/StructuresList.txt
+    find ${TMP}rtss/or/ -name "* *" -type f | while read file; do mv "$file" ${file// /}; done
+    for file in ${TMP}rtss/or/*.nrrd;do
+    #for file in ${TMP}rtss/*.nrrd;do
+      file2=$(echo ${file} | awk -F'/' '{print $NF}')
+      if [ $file2 != 'ct_crop.nrrd' ]; then
+        python ${convert_rtss} resample --i ${TMP}rtss/or/$file2 --ref ${TMP}rtss/ct_crop.nrrd --o ${TMP}rtss/$file2
+      fi
+    done
+  fi
+
   if [ $Flag_overview == '1234' ]; then
 #Generate overview
   python ${preproc} overview --i ${TMP}cbct_crop.nii.gz --ii ${TMP}ct_crop.nii.gz --mask_in  ${TMP}mask_crop.nii.gz \
@@ -127,7 +168,7 @@ Ciao
 
   if [ $Flag_remove == '1234' ]; then
     echo "Removing "
-      rm ${TMP}ct_o* ${TMP}ct_r* ${TMP}cbct_r* ${TMP}cbct_o* ${TMP}mask_C*
+      rm ${TMP}ct_or.gipl ${TMP}ct_r* ${TMP}cbct_r*gz ${TMP}cbct_or.gipl ${TMP}mask_C*
   fi
 
   if [ $Flag_extract == '1234' ]; then
@@ -140,6 +181,13 @@ Ciao
 
    python ${extract} extract --path ${Dcm_CT} --tags ${tags_CT} --pre ${TMP}ct_crop.nii.gz \
    --csv ${dirOut}overview/CT_UMCU_${Site}.csv --pt $pts --phase $phase
+  fi
+  if [ $Flag_get_IDS == '1234' ]; then
+    Dcm_CT=$(find ${Dcm_CBCT} -type f -name ct*dcm | head -1)
+    patientid_anon="$(grepTag.sh -v PatientID $Dcm_CT |head -n 1)"
+    patientid="$(grep ${patientid_anon} /home/mmaspero/IDs_real_anon.txt | awk -F"," '{print $1}')"
+    printf '%s, \t %s, \t %s, \t %s \n' $pts $phase $patientid_anon $patientid >> ${dirOut}overview/CBCT_UMCU_ID${Site}.csv
+    printf '%s, \t %s, \t %s, \t %s \n' $pts $phase $patientid_anon $patientid
   fi
 done
 

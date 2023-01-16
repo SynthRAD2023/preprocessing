@@ -10,10 +10,12 @@ Site='brain'
 initial='/nfs/arch11/researchData/PROJECT/MRonlyTP/Gen_sCT/data/'
 dirOut='/nfs/arch11/researchData/PROJECT/SynthRAD/2023/dataset_UMCU/Task'${Task}'/'${Site}'/'
 
-Flag_preproc=1234 	# set the flag to 1234 to activate the download
-Flag_extract=1234
-Flag_overview=1234
-Flag_remove=1234   # this is for full debug
+Flag_preproc=123 	# set the flag to 1234 to activate the download
+Flag_rtstruc=1234
+Flag_extract=123
+Flag_overview=123
+Flag_remove=123   # this is for full debug
+Flag_get_IDS=123
 
 if [ $Flag_extract == '1234' ]; then
   rm ${dirOut}overview/MR_UMCU_${Site}.csv
@@ -24,6 +26,7 @@ fi
 ## not to be modified by the user
 preproc='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/pre_process_tools.py'
 extract='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/extract_tags_tools_umc.py'
+convert_rtss='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing_new/convert_structures.py'
 
 tags_MR='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/param_files/tags_MR.txt'
 tags_CT='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/param_files/tags_CT.txt'
@@ -70,9 +73,29 @@ do
 
   echo -e "Hdf MR: " $Hdf_MR
 
+  if [ $Flag_rtstruc == '1234' ]; then
+    echo -e "Preparing RTStruct"
+    Dcm_RTstruct=$(find ${dirCT}Dcm/ -type f -name rts*dcm | head -1)
+    echo -e "Dcm RTSTRUCT: " $Dcm_RTstruct
+    mkdir -p ${TMP}rtss
+    mkdir -p ${TMP}rtss/or
+    alias plastimatch='/usr/bin/plastimatch'
+
+##   python ${convert_rtss} str2nrrd --i ${Dcm_RTstruct} --o ${TMP}rtss/or
+ #   /usr/bin/plastimatch convert --input ${Dcm_RTstruct} --output-prefix ${TMP}rtss/or --prefix-format nrrd --output-ss-list ${TMP}rtss/or/List.txt
+    python ${convert_rtss} nii2nrrd --i ${TMP}ct_crop.nii.gz --o ${TMP}rtss/ct_crop.nrrd
+    rm ${TMP}rtss/or/*_sq.nrrd
+    cp ${TMP}rtss/or/List.txt ${TMP}rtss/StructuresList.txt
+    find ${TMP}rtss/or/ -name "* *" -type f | while read file; do mv "$file" ${file// /}; done
+    for file in ${TMP}rtss/or/*.nrrd;do
+      file2=$(echo ${file} | awk -F'/' '{print $NF}')
+      python ${convert_rtss} resample --i ${TMP}rtss/or/$file2 --ref ${TMP}rtss/ct_crop.nrrd --o ${TMP}rtss/$file2
+    done
+  fi
+
   if [ $Flag_preproc == '1234' ]; then
 <<'Ciao'
-
+Ciao
   hdf2gipl.jar --infile $Hdf_CT --outfile ${TMP}ct_or.gipl
   ConvertSitk --infile ${TMP}ct_or.gipl --outfile ${TMP}ct_or.nii.gz
   hdf2gipl.jar --infile $Hdf_MR --outfile ${TMP}mr_or.gipl
@@ -103,7 +126,7 @@ do
 #Crop to dilated mask_MR
   #python ${preproc} crop --i ${TMP}ct_resampled.nii.gz --mask_crop ${TMP}mask_MR.nii.gz --o ${TMP}ct_cropped.nii.gz
   #python ${preproc} crop --i ${TMP}mr_T1_registered.nii.gz --mask_crop ${TMP}mask_MR.nii.gz --o ${TMP}mr_cropped.nii.gz
-Ciao
+
   python ${preproc} mask_ct --i ${TMP}ct_crop.nii.gz --mask_in ${TMP}mask_crop.nii.gz --o ${TMP}ct_crop.nii.gz
 
   fi
@@ -129,6 +152,16 @@ Ciao
    python ${extract} extract --path ${dirCT}/Dcm/ --tags ${tags_CT} --pre ${TMP}ct_crop.nii.gz \
    --csv ${dirOut}overview/CT_UMCU_${Site}.csv --pt $pts --phase $phase
   fi
+
+  if [ $Flag_get_IDS == '1234' ]; then
+
+  Dcm_CT=$(find ${dirCT}/Dcm/ -type f -name ct*dcm | head -1)
+  patientid_anon="$(grepTag.sh -v PatientID $Dcm_CT |head -n 1)"
+  patientid="$(grep ${patientid_anon} /home/mmaspero/IDs_real_anon.txt | awk -F"," '{print $1}')"
+  printf '%s, \t %s, \t %s, \t %s \n' $pts $phase $patientid_anon $patientid >> ${dirOut}overview/MR_UMCU_ID${Site}.csv
+  printf '%s, \t %s, \t %s, \t %s \n' $pts $phase $patientid_anon $patientid
+  fi
+
 done
 
 if [ $Flag_extract == '1234' ]; then
@@ -140,6 +173,8 @@ python ${extract} toxlsx --csv ${dirOut}overview/CT_UMCU_${Site}.csv \
 --xlsx ${dirOut}overview/CT_MR_UMCU_${Site}.xlsx --tags "CT"
 
 fi
+
+
 #today=`date +%Y%m%d`
 #mkdir -p ${dirOut}overview/${today}
 #cp ${dirOut}overview/*.csv ${dirOut}overview/${today}/
