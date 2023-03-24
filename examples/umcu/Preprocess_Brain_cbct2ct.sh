@@ -7,8 +7,8 @@ Task='2'
 Center='A'
 AnatomicalSite='B'
 Site='brain'
-initial='/nfs/arch11/researchData/PROJECT/CBCTreplan/SynthRAD/2023/Brain/'
-dirOut='/nfs/arch11/researchData/PROJECT/SynthRAD/2023/dataset_UMCU/Task'${Task}'/'${Site}'/'
+initial='initialDataLocation'
+dirOut='whereTheDataWillGO/Task'${Task}'/'${Site}'/'
 
 Flag_preproc=123 	# set the flag to 1234 to activate the download
 Flag_rtstruc=1234
@@ -16,7 +16,6 @@ Flag_deface=1234
 Flag_overview=1234
 Flag_extract=123
 Flag_remove=123   # this is for full debug
-Flag_get_IDS=123
 
 if [ $Flag_extract == '1234' ]; then
   rm ${dirOut}overview/CBCT_UMCU_${Site}.csv
@@ -25,14 +24,14 @@ if [ $Flag_extract == '1234' ]; then
 fi
 ## these paths contain all the fixed provided tools
 ## not to be modified by the user
-preproc='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/pre_process_tools.py'
-extract='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/extract_tags_tools_umc.py'
-convert_rtss='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/convert_structures.py'
-deface='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/anonymize.py'
+preproc='/code/preprocessing/pre_process_tools.py'
+extract='/code/preprocessing/extract_tags_tools_umc.py'
+convert_rtss='/code/preprocessing/convert_structures.py'
+deface='/code/preprocessing/anonymize.py'
 
-tags_CBCT='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/param_files/tags_CBCT.txt'
-tags_CT='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/param_files/tags_CT.txt'
-param_reg='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/param_files/parameters_CBCT_'${Site}'.txt'
+tags_CBCT='/code/preprocessing/param_files/tags_CBCT.txt'
+tags_CT='/code/preprocessing/param_files/tags_CT.txt'
+param_reg='/code/preprocessing/param_files/parameters_CBCT_'${Site}'.txt'
 
 Now=`date`
 script_name=$(basename $0)
@@ -199,14 +198,6 @@ Ciao
 
    python ${extract} extract --path ${Dcm_CT} --tags ${tags_CT} --pre ${TMP}ct_crop.nii.gz \
    --csv ${dirOut}overview/CT_UMCU_${Site}.csv --pt $pts --phase $phase
-  fi
-
-  if [ $Flag_get_IDS == '1234' ]; then
-    Dcm_CT=$(find ${Dcm_CBCT} -type f -name ct*dcm | head -1)
-    patientid_anon="$(grepTag.sh -v PatientID $Dcm_CT |head -n 1)"
-    patientid="$(grep ${patientid_anon} /home/mmaspero/IDs_real_anon.txt | awk -F"," '{print $1}')"
-    printf '%s, \t %s, \t %s, \t %s \n' $pts $phase $patientid_anon $patientid >> ${dirOut}overview/CBCT_UMCU_ID${Site}.csv
-    printf '%s, \t %s, \t %s, \t %s \n' $pts $phase $patientid_anon $patientid
   fi
 
 done
