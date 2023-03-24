@@ -105,8 +105,8 @@ git clone git@github.com:SynthRAD2023/preprocessing.git
 
 The main file ``pre_process_tools.py`` is meant to:
 * Convert Dicom to nifti (MRI+CT);
-* Resample CT to 1x1x1 (for brain);
-* Register MR to CT (as a result MRI will also have 1x1x1 spacing) using Elastix;
+* Resample CT to 1x1x1 for brain ad to 1x1x2.5 for pelvis;
+* Register MR to CT (as a result MRI will also have 1x1x1 or 1x1x2.5 spacing) using Elastix;
 * Segment patient outline on MRI an dilate mask;
 * Crop MRI, CT and the mask with a small extra margin to the dilated mask;
 
@@ -132,6 +132,7 @@ An example of a tag extraction is provided in the directory examples:
 *  ``extract_tags_UMCG.py`` shows an example of how to use the above functions for a dataset containing multiple patients and images directly in python;
 *  ``pre_process_batch_MR.sh`` contains instructions on how to call the above functions from the terminal.
 
+Futher example of the code from two insititutions has been provided. N.B. this is intended as example of script, it should be adapted for your own use.
 
 ## Functions Descriptions
 ### Pre-processing:
