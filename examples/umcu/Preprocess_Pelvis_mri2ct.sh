@@ -7,15 +7,14 @@ Task='1'
 Center='A'
 AnatomicalSite='P'
 Site='pelvis'
-initial='/nfs/arch11/researchData/PROJECT/MRonlyTP/Gen_sCT/data/'
-dirOut='/nfs/arch11/researchData/PROJECT/SynthRAD/2023/dataset_UMCU/Task1/'${Site}'/'
+initial='initialDataLocation'
+dirOut='whereTheDAtaWillGo/Task1/'${Site}'/'
 
 Flag_preproc=123 	# set the flag to 1234 to activate the download
 Flag_rtstruc=1234
 Flag_extract=123
 Flag_overview=1234
 Flag_remove=123   # this is for full debug
-Flag_get_IDS=123
 
 if [ $Flag_extract == '1234' ]; then
   rm ${dirOut}overview/MR_UMCU_${Site}.csv
@@ -24,13 +23,13 @@ if [ $Flag_extract == '1234' ]; then
 fi
 ## these paths contain all the fixed provided tools
 ## not to be modified by the user
-preproc='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/pre_process_tools.py'
-extract='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/extract_tags_tools_umc.py'
-convert_rtss='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/convert_structures.py'
+preproc='/code/preprocessing/pre_process_tools.py'
+extract='/code/preprocessing/extract_tags_tools_umc.py'
+convert_rtss='/code/preprocessing/convert_structures.py'
 
-tags_MR='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/param_files/tags_MR.txt'
-tags_CT='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/param_files/tags_CT.txt'
-param_reg='/home/mmaspero/Projects/GrandChallenge_sCT/SynthRAD2023/code/preprocessing/param_files/parameters_MR.txt'
+tags_MR='/code/preprocessing/param_files/tags_MR.txt'
+tags_CT='/code/preprocessing/param_files/tags_CT.txt'
+param_reg='/code/preprocessing/param_files/parameters_MR.txt'
 
 Now=`date`
 script_name=$(basename $0)
@@ -200,15 +199,6 @@ Comm
   python ${extract} extract --path ${dirCT}/Dcm/ --tags ${tags_CT} --pre ${TMP}ct_crop.nii.gz \
   --csv ${dirOut}overview/CT_UMCU_${Site}.csv --pt $pts --phase $phase
 
-  fi
-
-  if [ $Flag_get_IDS == '1234' ]; then
-
-  Dcm_CT=$(find ${dirCT}/Dcm/ -type f -name ct*dcm | head -1)
-  patientid_anon="$(grepTag.sh -v PatientID $Dcm_CT |head -n 1)"
-  patientid="$(grep ${patientid_anon} /home/mmaspero/IDs_real_anon.txt | awk -F"," '{print $1}')"
-  printf '%s, \t %s, \t %s, \t %s \n' $pts $phase $patientid_anon $patientid >> ${dirOut}overview/MR_UMCU_ID${Site}.csv
-  printf '%s, \t %s, \t %s, \t %s \n' $pts $phase $patientid_anon $patientid
   fi
 
 done
