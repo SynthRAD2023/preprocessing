@@ -6,7 +6,7 @@ import fnmatch
 import shutil
 import convert_structures as conv
 
-data_dir = r'\\zkh\Appdata\RTDicom\GalaponAV\synthRAD\Brain_dataset'
+data_dir = r'\\path\\to\\data\\directory'
 
 cases = os.listdir(data_dir)
 cases = fnmatch.filter(cases,'p_0*')
