@@ -55,11 +55,14 @@
 
 
 <!-- ABOUT THE PROJECT -->
+<br/>
+<br/>
+
 ## Goal
 
-Considering the ``.dcm`` of the MRI (or CBCT), CT of each patient, register to the CT reference grid
-after resampling and cropping to reduce the amount of data to be considered for the challenge.
-
+To pre-process CBCT, MRI and CT images for the synthRAD2023 deep learning challenge. This includes file format conversions from ``.dcm`` to ``.nii.gz``, resampling, allignment, masking, defacing and  cropping.
+<br/>
+<br/>
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -72,11 +75,8 @@ To get a local copy up and running follow these simple steps.
 ```sh
 pip install numpy
 ```
-* SimpleITK 
-```sh
-pip install SimpleITK
-```
-* SimpleElastix 
+
+* SimpleITK/SimpleElastix 
 ```sh
 pip install SimpleITK-SimpleElastix
 ```
@@ -100,24 +100,26 @@ git clone git@github.com:SynthRAD2023/preprocessing.git
 ```
 
 <!-- USAGE EXAMPLES -->
+<br/>
+<br/>
 
 ## Usage
 
-The main file ``pre_process_tools.py`` is meant to:
-* Convert Dicom to nifti (MRI+CT);
-* Resample CT to 1x1x1 for brain ad to 1x1x2.5 for pelvis;
-* Register MR to CT (as a result MRI will also have 1x1x1 or 1x1x2.5 spacing) using Elastix;
-* Segment patient outline on MRI an dilate mask;
-* Crop MRI, CT and the mask with a small extra margin to the dilated mask;
+The main file ``pre_process_tools.py`` contains tools for:
+* Converting from ``.dcm`` to ``.nii.gz`` (MRI,CBCT and CT);
+* Resampling CTs to 1x1x1 mm<sup>3</sup> for brain and to 1x1x2.5 mm<sup>3</sup> for pelvis;
+* Registering MRI/CBCT to CT (as a result MRI/CBCT will also have 1x1x1 or 1x1x2.5 spacing) using Elastix;
+* Segmenting patient outline on MRI/CBCT an dilate the resulting mask;
+* Crop MRI, CBCT, CT and the mask with a small extra margin to the dilated mask;
 
 The Elastix parameter files adopted can be found in ``param_files``.
 
-If desired, it is also possible to:
-* Apply the mask MRI and CT;
+If desired, there is also functions to:
+* Apply the mask to MRI and CT;
 
 Each task can be run as a subfunction of the main file, as described in the next section.
 
-Examples of how to run for multiple patients can be found in the directory ``examples``:
+Examples of how to run pre-processing for a batch of patients can be found in the directory ``examples``:
 * ``pre_process_batch_MR.py`` for python-based pre-processing;
 * ``pre_process_batch_MR.sh`` for bash-based (terminal) pre-processing in Unix. This file reads the list
 of patients provided in ``pat_list_brain_mri2ct.txt``.
@@ -133,8 +135,10 @@ An example of a tag extraction is provided in the directory examples:
 *  ``pre_process_batch_MR.sh`` contains instructions on how to call the above functions from the terminal.
 
 Futher example of the code from two insititutions has been provided. N.B. this is intended as example of script, it should be adapted for your own use.
+<br/>
+<br/>
 
-## Functions Descriptions
+## Function Description
 ### Pre-processing:
 
 **convert_dicom_nifti(input, output)**
@@ -164,11 +168,13 @@ Futher example of the code from two insititutions has been provided. N.B. this i
 	python pre_process_tools.py resample --i 'C:\path\to\folder\image.nii.gz' --o 'C:\path\to\folder\image_resampled.nii.gz' --s 1 1 1
 
 
-**read_parameter_map()**
+**read_parameter_map(parameter_fn)**
 	
 	description:
 	read an elastix parameter map from a .txt file and return the parameter map object
 
+	arguments:
+	parameter_fn: file path parameter file
 
 **register(fixed, moving, parameter, output)**
 	
@@ -235,6 +241,33 @@ Futher example of the code from two insititutions has been provided. N.B. this i
 	mask_crop: file path to mask, used to calculate bounding box (example: 'C:\path\to\folder\mask.nii.gz')
 	output: file path to cropped image (example: 'C:\path\to\folder\image_cropped.nii.gz')
 
+**generate_overview(input_path,ref_path,mask_path,output_path,title)**
+	
+	description:
+	generate a figure with CBCT/MR, CT and MASK to check pre-processing
+
+	arguments:
+	input_path: path to pre-processed CBCT/MR
+	ref_path: path to pre-processed reference CT
+	mask_path: path to pre-processed mask
+	output_path: output path of figure file
+	title: Title used in figure
+
+
+**Other utilities**
+
+In addition to the main functions above, following functions were used for specific datasets and specifc anatomies:
+
+* limit_pixel_values: sets a fixed minimum value for all voxels
+* clean_border: removes artifacts from the patient border
+* create_FOV_cbct: creates a FOV ROI for cbcts
+* fix_fov_cbct_umcg: fixes the mask so the mask does not contain voxels outside the FOV
+* transform_mask: Warps a mask from CBCT coordinatesto CT coordinate system
+* generate_mask_cbct: combines many functions (including some of the above) to generate a final mask for cbcts
+
+<br/>
+<br/>
+
 ### Dicom tag extraction:
 
 **read_tags(input_txt)**
@@ -285,6 +318,7 @@ Futher example of the code from two insititutions has been provided. N.B. this i
 	input_csv: path to csv file
 	output_xlsx: filepath of output xlsx file
 
+<br/>
 
 <!-- ROADMAP -->
 ## Roadmap
@@ -292,6 +326,8 @@ Futher example of the code from two insititutions has been provided. N.B. this i
 See the [open issues](https://github.com/SynthRAD2023/preprocessing/issues) for a list of proposed features (and known issues).
 
 <!-- CONTRIBUTING -->
+<br/>
+
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -301,16 +337,20 @@ Contributions are what make the open source community such an amazing place to b
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+<br/><br/>
+
 
 <!-- LICENSE -->
 ## License
 
 Distributed under the GNU General Public License v3.0. See `LICENSE` for more information.
+<br/><br/>
+
 
 <!-- CONTACT -->
 ## Contact
 
-Adrian Thummerer - - mail here  
+Adrian Thummerer - a[dot]thummerer[at]umcg[dot]nl  
 Matteo Maspero - [@matteomasperonl](https://twitter.com/matteomasperonl) - m.maspero@umcutrecht.nl
 
 Project Link: [https://github.com/SynthRAD2023/preprocessing](https://github.com/SynthRAD2023/preprocessing)
