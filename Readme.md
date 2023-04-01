@@ -368,12 +368,12 @@ Project Link: [https://github.com/SynthRAD2023/preprocessing](https://github.com
 <!-- https://www.markdownguide.org/basic-syntax/
 #reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/SynthRAD2023/repo.svg?style=flat-square
-[contributors-url]: https://github.com/SynthRAD2023/repo/graphs/contributors
+[contributors-url]: https://github.com/SynthRAD2023/preprocessing/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/SynthRAD2023/repo.svg?style=flat-square
-[forks-url]: https://github.com/SynthRAD2023/repo/network/members
+[forks-url]: https://github.com/SynthRAD2023/preprocessing/network/members
 [stars-shield]: https://img.shields.io/github/stars/SynthRAD2023/repo.svg?style=flat-square
-[stars-url]: https://github.com/SynthRAD2023/repo/stargazers
+[stars-url]: https://github.com/SynthRAD2023/preprocessing/stargazers
 [issues-shield]: https://img.shields.io/github/issues/SynthRAD2023/repo.svg?style=flat-square
-[issues-url]: https://github.com/SynthRAD2023/repo/issues
+[issues-url]: https://github.com/SynthRAD2023/preprocessing/issues
 [license-shield]: https://img.shields.io/github/license/SynthRAD2023/repo.svg?style=flat-square
-[license-url]: https://github.com/SynthRAD2023/repo/blob/master/LICENSE.txt
+[license-url]: https://github.com/SynthRAD2023/preprocessing/blob/master/LICENSE.txt
