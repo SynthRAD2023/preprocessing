@@ -367,13 +367,13 @@ Project Link: [https://github.com/SynthRAD2023/preprocessing](https://github.com
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/
 #reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/SynthRAD2023/repo.svg?style=flat-square
+[contributors-shield]: https://img.shields.io/github/contributors/SynthRAD2023/preprocessing.svg?style=flat-square
 [contributors-url]: https://github.com/SynthRAD2023/preprocessing/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/SynthRAD2023/repo.svg?style=flat-square
+[forks-shield]: https://img.shields.io/github/forks/SynthRAD2023/preprocessing.svg?style=flat-square
 [forks-url]: https://github.com/SynthRAD2023/preprocessing/network/members
-[stars-shield]: https://img.shields.io/github/stars/SynthRAD2023/repo.svg?style=flat-square
+[stars-shield]: https://img.shields.io/github/stars/SynthRAD2023/preprocessing.svg?style=flat-square
 [stars-url]: https://github.com/SynthRAD2023/preprocessing/stargazers
-[issues-shield]: https://img.shields.io/github/issues/SynthRAD2023/repo.svg?style=flat-square
+[issues-shield]: https://img.shields.io/github/issues/SynthRAD2023/preprocessing.svg?style=flat-square
 [issues-url]: https://github.com/SynthRAD2023/preprocessing/issues
-[license-shield]: https://img.shields.io/github/license/SynthRAD2023/repo.svg?style=flat-square
+[license-shield]: https://img.shields.io/github/license/SynthRAD2023/preprocessing.svg?style=flat-square
 [license-url]: https://github.com/SynthRAD2023/preprocessing/blob/master/LICENSE.txt
